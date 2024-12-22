@@ -10,7 +10,7 @@ enum Commands {
 }
 
 #[derive(Parser)]
-#[command(name = "seed")]
+#[command(name = "grow")]
 #[command(about = "Seeders", long_about = None)]
 struct Cli {
     #[clap(subcommand)]
@@ -21,10 +21,8 @@ fn main() {
     let cli = Cli::parse();
     match &cli.command {
         Commands::Init => functions::init_seeder(),
-        Commands::New { name } => {
-            println!("{name}")
-        }
-        Commands::List => todo!(),
+        Commands::New { name } => functions::create_seeder(name),
+        Commands::List => functions::list_seeders(),
         Commands::Run { file_name } => {
             if let Some(file_name) = file_name {
                 println!("Running seeder: {file_name}");
