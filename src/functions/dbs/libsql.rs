@@ -5,24 +5,23 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 
-/// Ejecuta seeders con conexión a la base de datos libSQL
 pub async fn run_seeder(db_url: String, file_name: Option<&String>) {
     let seeders_path = Path::new("seeders");
     let db_token = std::env::var("TURSO_AUTH_TOKEN").expect("TURSO_AUTH_TOKEN no existe");
 
     if !seeders_path.is_dir() {
-        eprintln!("El directorio 'seeders/' no existe.");
+        eprintln!("The directory 'seeders/' does not exist");
         return;
     }
 
     let client = libsql::Builder::new_remote(db_url, db_token)
         .build()
         .await
-        .expect("No se pudo construir el cliente de base de datos");
+        .expect("Could not build the database client");
 
     let conn = client
         .connect()
-        .expect("No se pudo conectar a la base de datos");
+        .expect("Could not connect to the database");
 
     let files: Vec<_> = match file_name {
         Some(file_name) => vec![seeders_path.join(file_name)],
@@ -35,7 +34,7 @@ pub async fn run_seeder(db_url: String, file_name: Option<&String>) {
 
     for file in files {
         if let Err(err) = process_file(&file, &conn).await {
-            eprintln!("Error procesando {:?}: {}", file, err);
+            eprintln!("Error processing {:?}: {}", file, err);
         }
     }
 }
@@ -58,7 +57,7 @@ async fn process_file(file: &Path, conn: &libsql::Connection) -> Result<(), Box<
                 }
             } else {
                 eprintln!(
-                    "Error: La clave principal debe ser una cadena. Clave no válida: {:?}",
+                    "Error: The primary key must be a string. Invalid key: {:?}",
                     key
                 );
             }
@@ -79,7 +78,7 @@ async fn insert_entry(
             if let RonValue::String(s) = k {
                 s.clone()
             } else {
-                panic!("Las columnas deben ser strings");
+                panic!("The columns must be strings");
             }
         })
         .collect();
@@ -91,7 +90,7 @@ async fn insert_entry(
                 .as_f64()
                 .map(|f| f.to_string())
                 .or_else(|| n.as_i64().map(|i| i.to_string()))
-                .expect("Número inválido"),
+                .expect("Invalid number"),
             other => format!("{:?}", other),
         })
         .collect();
@@ -105,7 +104,7 @@ async fn insert_entry(
 
     conn.execute(&query, params::params_from_iter(values.clone()))
         .await
-        .expect("Error al ejecutar la inserción");
+        .expect("Error executing query");
 
     Ok(())
 }

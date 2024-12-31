@@ -13,18 +13,18 @@ pub async fn infer_database(
                 Ok("LibSQL".to_string())
             }
             "postgres" | "mysql" | "sqlite" => {
-                println!("Base de datos SQLx detectada: {}", scheme);
+                println!("SQLx database detected: {}", scheme);
                 sqlx_db::run_seeder(&database_url, file_name).await?;
                 Ok(scheme.to_string())
             }
             _ => {
-                let error_message = format!("Esquema desconocido: {}", scheme);
+                let error_message = format!("Unknown schema: {}", scheme);
                 eprintln!("{}", error_message);
                 Err(error_message.into())
             }
         }
     } else {
-        let error_message = "URL de base de datos no válida".to_string();
+        let error_message = "Invalid database URL".to_string();
         eprintln!("{}", error_message);
         Err(error_message.into())
     }

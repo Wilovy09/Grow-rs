@@ -12,7 +12,7 @@ pub async fn run_seeder(db_url: &str, file_name: Option<&String>) -> Result<(), 
     let seeders_path = Path::new("seeders");
 
     if !seeders_path.is_dir() {
-        eprintln!("El directorio 'seeders/' no existe.");
+        eprintln!("The directory 'seeders/' does not exist");
         return Ok(());
     }
 
@@ -27,7 +27,7 @@ pub async fn run_seeder(db_url: &str, file_name: Option<&String>) -> Result<(), 
 
     for file in files {
         if let Err(err) = process_file(&file, &pool).await {
-            eprintln!("Error procesando {:?}: {}", file, err);
+            eprintln!("Error processing {:?}: {}", file, err);
         }
     }
 
@@ -48,11 +48,11 @@ async fn process_file(file: &Path, pool: &AnyPool) -> Result<(), Box<dyn Error>>
                             insert_entry(pool, &table, entry_map).await?;
                         }
                     }
-                    println!("Seeder ejecutado: {:?}", file);
+                    println!("Seeder executed: {:?}", file);
                 }
             } else {
                 eprintln!(
-                    "Error: La clave principal debe ser una cadena. Clave no válida: {:?}",
+                    "Error: The primary key must be a string. Invalid key: {:?}",
                     key
                 );
             }
@@ -73,7 +73,7 @@ async fn insert_entry(
             if let RonValue::String(s) = k {
                 s.clone()
             } else {
-                panic!("Las columnas deben ser cadenas");
+                panic!("The columns must be strings");
             }
         })
         .collect();
@@ -85,7 +85,7 @@ async fn insert_entry(
                 .as_f64()
                 .map(|f| f.to_string())
                 .or_else(|| n.as_i64().map(|i| i.to_string()))
-                .expect("Número inválido"),
+                .expect("Invalid number"),
             other => format!("{:?}", other),
         })
         .collect();

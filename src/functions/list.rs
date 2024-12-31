@@ -10,7 +10,7 @@ pub fn list_seeders() {
                 .filter(|entry| entry.path().is_file())
                 .filter_map(|entry| {
                     entry.file_name().to_string_lossy().to_string();
-                    // Eliminar la extensión ".ron"
+                    // Remove the ".ron" extension
                     let path = entry.path();
                     if path.extension()?.to_str()? == "ron" {
                         Some(path.file_stem()?.to_string_lossy().to_string())

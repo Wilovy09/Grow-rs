@@ -22,7 +22,7 @@ struct Cli {
 async fn main() {
     dotenv().ok();
     let cli = Cli::parse();
-    let db_url = std::env::var("DATABASE_URL").expect("Falta TURSO_DATABASE_URL");
+    let db_url = std::env::var("DATABASE_URL").expect("Missing TURSO_DATABASE_URL");
 
     match &cli.command {
         Commands::Init => functions::init_seeder(),
@@ -30,7 +30,7 @@ async fn main() {
         Commands::List => functions::list_seeders(),
         Commands::Run { file_name } => {
             if let Err(e) = functions::infer_database(db_url, file_name.as_ref()).await {
-                eprintln!("Error al ejecutar seeders: {}", e);
+                eprintln!("Error while executing seeders: {}", e);
             }
         }
     }
