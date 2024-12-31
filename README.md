@@ -11,10 +11,8 @@ Grow Seeder CLI is a command line tool written in Rust to manage database seeder
 
 ## Installation
 
-Clone the repository and install the CLI binary:
-
 ```bash
-cargo install --path .
+cargo install --git https://github.com/Wilovy09/grow 
 ```
 
 ## Commands
@@ -94,9 +92,9 @@ Grow Seeder CLI is compatible with:
 > Required on all `DATABASE_URL` in your `.env`
 
 - [x] **LibSQL**: Requires the `TURSO_AUTH_TOKEN` variable.
-- [ ] **PostgreSQL**
-- [ ] **MySQL**
-- [ ] **SQLite**
+- [x] **PostgreSQL**
+- [x] **MySQL**
+- [x] **SQLite**
 
 The CLI automatically detects the database type via `DATABASE_URL` and handles the connection appropriately.
 
@@ -208,9 +206,9 @@ Grow Seeder CLI es compatible con:
 > Es necesario en todas `DATABASE_URL` en tu `.env`
 
 - [x] **LibSQL**: Requiere la variable `TURSO_AUTH_TOKEN`.
-- [ ] **PostgreSQL**
-- [ ] **MySQL**
-- [ ] **SQLite**
+- [x] **PostgreSQL**
+- [x] **MySQL**
+- [x] **SQLite**
 
 El CLI detecta automáticamente el tipo de base de datos a través de `DATABASE_URL` y maneja la conexión de manera adecuada.
 

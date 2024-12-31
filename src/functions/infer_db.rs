@@ -1,4 +1,4 @@
-use crate::functions::dbs;
+use crate::functions::dbs::{libsql, sqlx_db};
 use std::error::Error;
 
 pub async fn infer_database(
@@ -8,31 +8,25 @@ pub async fn infer_database(
     if let Some(scheme) = database_url.split("://").next() {
         match scheme {
             "libsql" => {
-                println!("Libsql");
-                dbs::libsql::run_seeder(database_url, file_name).await;
-                Ok("libsql".to_string())
+                println!("LibSQL");
+                libsql::run_seeder(database_url, file_name).await;
+                Ok("LibSQL".to_string())
             }
-            "postgres" => {
-                println!("PostgreSQL");
-                Ok("PostgreSQL".to_string())
-            }
-            "mysql" => {
-                println!("MySQL");
-                Ok("MySQL".to_string())
-            }
-            "sqlite" => {
-                println!("SQLite");
-                Ok("SQLite".to_string())
+            "postgres" | "mysql" | "sqlite" => {
+                println!("Base de datos SQLx detectada: {}", scheme);
+                sqlx_db::run_seeder(&database_url, file_name).await?;
+                Ok(scheme.to_string())
             }
             _ => {
-                let error_message = format!("Unknown scheme: {}", scheme);
-                println!("{}", error_message);
+                let error_message = format!("Esquema desconocido: {}", scheme);
+                eprintln!("{}", error_message);
                 Err(error_message.into())
             }
         }
     } else {
-        let error_message = "Invalid database URL".to_string();
-        println!("{}", error_message);
+        let error_message = "URL de base de datos no válida".to_string();
+        eprintln!("{}", error_message);
         Err(error_message.into())
     }
 }
+

@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.23", features = ["derive", "string"] }
 dotenv = "0.15.0"
-libsql = "0.6.0"
+libsql = { version = "0.6.0", default-features = false, features = ["remote"] }
 ron = "0.8.1"
+sqlx = { version = "0.8.2", features = ["runtime-async-std", "sqlite", "postgres", "mysql", "macros", "migrate"] }
 tokio = { version = "1.42.0", features = ["full"] }
+
