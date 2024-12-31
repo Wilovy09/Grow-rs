@@ -123,10 +123,8 @@ Grow Seeder CLI es una herramienta de línea de comandos escrita en Rust para ge
 
 ## Instalación
 
-Clona el repositorio e instala el binario del CLI:
-
 ```bash
-cargo install --path .
+cargo install --git https://github.com/Wilovy09/grow 
 ```
 
 ## Comandos
