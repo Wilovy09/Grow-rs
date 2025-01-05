@@ -1,0 +1,9 @@
+[package]
+name = "grow_sqlx"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ron = "0.8.1"
+sqlx = { version = "0.8.2", features = ["runtime-async-std", "sqlite", "postgres", "mysql", "macros", "migrate"] }
+

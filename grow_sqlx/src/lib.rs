@@ -1,11 +1,10 @@
-use sqlx::AnyPool;
 use ron::Value as RonValue;
+use sqlx::any::install_default_drivers;
+use sqlx::AnyPool;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
-use sqlx::any::install_default_drivers;
-
 
 pub async fn run_seeder(db_url: &str, file_name: Option<&String>) -> Result<(), Box<dyn Error>> {
     install_default_drivers();
@@ -94,7 +93,7 @@ async fn insert_entry(
         .map(|i| format!("${}", i))
         .collect::<Vec<_>>()
         .join(", ");
-    
+
     let sql_query = format!(
         "INSERT INTO {} ({}) VALUES ({})",
         table,

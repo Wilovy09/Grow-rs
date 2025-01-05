@@ -1,4 +1,3 @@
-use crate::functions::dbs::{libsql, sqlx_db};
 use std::error::Error;
 
 pub async fn infer_database(
@@ -9,12 +8,12 @@ pub async fn infer_database(
         match scheme {
             "libsql" => {
                 println!("LibSQL");
-                libsql::run_seeder(database_url, file_name).await;
+                grow_libsql::run_seeder(database_url, file_name).await;
                 Ok("LibSQL".to_string())
             }
             "postgres" | "mysql" | "sqlite" => {
                 println!("SQLx database detected: {}", scheme);
-                sqlx_db::run_seeder(&database_url, file_name).await?;
+                grow_sqlx::run_seeder(&database_url, file_name).await?;
                 Ok(scheme.to_string())
             }
             _ => {
@@ -29,4 +28,3 @@ pub async fn infer_database(
         Err(error_message.into())
     }
 }
-

@@ -22,7 +22,13 @@ struct Cli {
 async fn main() {
     dotenv().ok();
     let cli = Cli::parse();
-    let db_url = std::env::var("DATABASE_URL").expect("Missing TURSO_DATABASE_URL");
+    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|err| {
+        eprintln!(
+            "Error: {}. Please, be sure to set the `DATABASE_URL` environment variable.",
+            err
+        );
+        std::process::exit(1);
+    });
 
     match &cli.command {
         Commands::Init => functions::init_seeder(),

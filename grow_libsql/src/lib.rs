@@ -1,13 +1,16 @@
 use libsql::params;
 use ron::Value as RonValue;
-use std::collections::HashMap;
-use std::error::Error;
-use std::fs;
-use std::path::Path;
+use std::{collections::HashMap, error::Error, fs, path::Path};
 
 pub async fn run_seeder(db_url: String, file_name: Option<&String>) {
     let seeders_path = Path::new("seeders");
-    let db_token = std::env::var("TURSO_AUTH_TOKEN").expect("TURSO_AUTH_TOKEN no existe");
+    let db_token = std::env::var("TURSO_AUTH_TOKEN").unwrap_or_else(|err| {
+        eprintln!(
+            "Error: {}. Please, be sure to set the `TURSO_AUTH_TOKEN` environment variable.",
+            err
+        );
+        std::process::exit(1);
+    });
 
     if !seeders_path.is_dir() {
         eprintln!("The directory 'seeders/' does not exist");
@@ -19,9 +22,7 @@ pub async fn run_seeder(db_url: String, file_name: Option<&String>) {
         .await
         .expect("Could not build the database client");
 
-    let conn = client
-        .connect()
-        .expect("Could not connect to the database");
+    let conn = client.connect().expect("Could not connect to the database");
 
     let files: Vec<_> = match file_name {
         Some(file_name) => vec![seeders_path.join(file_name)],

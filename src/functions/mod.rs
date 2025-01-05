@@ -1,4 +1,3 @@
-pub mod dbs;
 pub mod infer_db;
 pub mod init;
 pub mod list;
