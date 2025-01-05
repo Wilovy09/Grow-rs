@@ -2,6 +2,12 @@
 name = "grow"
 version = "0.1.0"
 edition = "2021"
+description = "🌱 Write sedders in RON"
+categories = ["development-tools", "sqlx", "libsql", "cli", "database", "db", "seeder"]
+authors = ["Wilovy09"]
+license = "MIT"
+repository = "https://github.com/Wilovy09/Grow"
+homepage = "https://github.com/Wilovy09/Grow"
 
 [dependencies]
 clap = { version = "4.5.23", features = ["derive", "string"] }
@@ -9,3 +15,16 @@ dotenv = "0.15.0"
 tokio = { version = "1.42.0", features = ["full"] }
 grow_libsql = { path = "./grow_libsql" }
 grow_sqlx = { path = "./grow_sqlx" }
+
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+[workspace.metadata.dist]
+cargo-dist-version = "0.13.2"
+ci = ["github"]
+installers = ["shell", "powershell", "homebrew"]
+tap = "Wilovy09/homebrew-tap"
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+publish-jobs = ["homebrew"]
+pr-run-mode = "plan"
