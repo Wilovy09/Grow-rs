@@ -13,8 +13,8 @@ homepage = "https://github.com/Wilovy09/Grow"
 clap = { version = "4.5.23", features = ["derive", "string"] }
 dotenv = "0.15.0"
 tokio = { version = "1.42.0", features = ["full"] }
-grow_libsql = { path = "./grow_libsql" }
-grow_sqlx = { path = "./grow_sqlx" }
+grow_libsql = { version = "0.1.0", path = "./grow_libsql" }
+grow_sqlx = { version = "0.1.0", path = "./grow_sqlx" }
 
 [profile.dist]
 inherits = "release"
