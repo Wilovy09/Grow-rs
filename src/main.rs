@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-mod functions;
+mod commands;
 use dotenv::dotenv;
 
 #[derive(Subcommand)]
@@ -31,11 +31,11 @@ async fn main() {
     });
 
     match &cli.command {
-        Commands::Init => functions::init_seeder(),
-        Commands::New { name } => functions::create_seeder(name),
-        Commands::List => functions::list_seeders(),
+        Commands::Init => commands::init_seeder(),
+        Commands::New { name } => commands::create_seeder(name),
+        Commands::List => commands::list_seeders(),
         Commands::Run { file_name } => {
-            if let Err(e) = functions::infer_database(db_url, file_name.as_ref()).await {
+            if let Err(e) = commands::infer_database(db_url, file_name.as_ref()).await {
                 eprintln!("Error while executing seeders: {}", e);
             }
         }
