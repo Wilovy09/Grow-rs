@@ -12,7 +12,7 @@ enum Commands {
 
 #[derive(Parser)]
 #[command(name = "grow")]
-#[command(about = "Seeders", long_about = None)]
+#[clap(author, version, about)]
 struct Cli {
     #[clap(subcommand)]
     command: Commands,
