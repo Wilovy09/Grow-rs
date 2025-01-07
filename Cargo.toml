@@ -6,8 +6,8 @@ description = "🌱 Write sedders in RON"
 categories = ["sqlx", "libsql", "cli", "database", "seeder"]
 authors = ["Wilovy09"]
 license = "MIT"
-repository = "https://github.com/Wilovy09/Grow"
-homepage = "https://github.com/Wilovy09/Grow"
+repository = "https://github.com/Wilovy09/Grow-rs"
+homepage = "https://github.com/Wilovy09/Grow-rs"
 
 [dependencies]
 clap = { version = "4.5.23", features = ["derive", "string"] }
