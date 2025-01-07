@@ -16,42 +16,19 @@ Grow Seeder CLI is a command line tool written in Rust to manage database seeder
 ## Installation
 
 ```bash
-cargo install --git https://github.com/Wilovy09/grow
+cargo install grow-rs
+# or
+cargo install --git https://github.com/Wilovy09/Grow-rs
 ```
 
 ## Commands
 
-### grow init
-
-Creates a `seeders/` folder in the current directory to store seeders.
-
-```bash
-grow init
-```
-
-### grow new <NAME>
-
-Creates a new `.ron` file inside the `seeders/` folder. The file name will be `<NAME>.ron`.
-
-```bash
-grow new UserSeeder
-```
-
-### grow list
-
-Displays a list of all available seeders in the `seeders/` folder.
-
-```bash
-grow list
-```
-
-### grow run [<NAME.ron>]
-
-Run the seeders. If no file is specified, it will run all seeders in alphabetical order.
-
-```bash
-grow run User.ron
-```
+| Commands          | Functions                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| grow init         | Creates a `seeders/` folder in the current directory to store seeders.                      |
+| grow new NAME     | Creates a new `.ron` file inside the `seeders/` folder. The file name will be `<NAME>.ron`. |
+| grow list         | Displays a list of all available seeders in the `seeders/` folder.                          |
+| grow run NAME.ron | Run the seeder. If no file is specified, it will run all seeders in alphabetical order.     |
 
 ## Seeder Example
 
@@ -110,6 +87,39 @@ The CLI automatically detects the database type via `DATABASE_URL` and handles t
 ## Features
 
 - [ ] Create a library to run seeder in the code and not with CLI
+- [ ] Add `fake` in column value to create fake data.
+
+Example for `fake` feature:
+
+```ron
+(
+    User: [
+        // The definitive form has not yet been defined
+        {
+            "role": "Admin",
+            "email": "fake:email",
+            "password": "fake:string",
+            "created_at": "fake:datetime",
+            "updated_at": "fake:datetime"
+        },
+        {
+            "role": "Client",
+            "email": Fake("email"),
+            "password": Fake("string"),
+            "created_at": Fake("datetime"),
+            "updated_at": Fake("datetime")
+        },
+        {
+            "role": "Client",
+            "email": "fake::email",
+            "password": "fake::password",
+            "created_at": "fake::datetime",
+            "updated_at": "fake::datetime"
+        },
+
+    ]
+)
+```
 
 ## License
 
