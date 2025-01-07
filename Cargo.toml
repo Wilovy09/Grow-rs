@@ -1,5 +1,5 @@
 [package]
-name = "grow"
+name = "grow-rs"
 version = "0.1.0"
 edition = "2021"
 description = "🌱 Write sedders in RON"
@@ -15,6 +15,10 @@ dotenv = "0.15.0"
 tokio = { version = "1.42.0", features = ["full"] }
 grow_libsql = { version = "0.1.0", path = "./grow_libsql" }
 grow_sqlx = { version = "0.1.0", path = "./grow_sqlx" }
+
+[[bin]]
+name = "grow"
+path = "src/main.rs"
 
 [profile.dist]
 inherits = "release"
