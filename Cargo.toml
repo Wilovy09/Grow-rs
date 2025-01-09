@@ -9,12 +9,17 @@ license = "MIT"
 repository = "https://github.com/Wilovy09/Grow-rs"
 homepage = "https://github.com/Wilovy09/Grow-rs"
 
+[features]
+default = ["libsql", "sqlx"]
+libsql = ["dep:grow_libsql"]
+sqlx = ["dep:grow_sqlx"]
+
 [dependencies]
 clap = { version = "4.5.23", features = ["derive", "string"] }
 dotenv = "0.15.0"
 tokio = { version = "1.42.0", features = ["full"] }
-grow_libsql = { version = "0.1.0", path = "./grow_libsql" }
-grow_sqlx = { version = "0.1.0", path = "./grow_sqlx" }
+grow_libsql = { version = "0.1.0", path = "./grow_libsql", optional = true }
+grow_sqlx = { version = "0.1.0", path = "./grow_sqlx", optional = true }
 
 [[bin]]
 name = "grow"
