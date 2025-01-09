@@ -30,6 +30,14 @@ cargo install --git https://github.com/Wilovy09/Grow-rs
 | grow list         | Displays a list of all available seeders in the `seeders/` folder.                          |
 | grow run NAME.ron | Run the seeder. If no file is specified, it will run all seeders in alphabetical order.     |
 
+## Cargo features
+
+| Feature   | Description                                   |
+|-----------|-----------------------------------------------|
+| `default` | Install `libsql` && `sqlx databases` support. |
+| `libsql`  | Install only `libsql` support.                |
+| `sqlx`    | Install only `sqlx databases` support.        |
+
 ## Seeder Example
 
 A seeder file in `.ron` format could have the following content:
@@ -42,23 +50,23 @@ A seeder file in `.ron` format could have the following content:
   // Table name
     User: [
         {
-            "role": "Administrator",
+            "role": "Admin",
             "email": "admin@example.com",
             "password": "hashed_password_admin",
             "created_at": "2024-12-22 12:00:00",
             "updated_at": "2024-12-22 12:00:00"
         },
         {
-            "role": "Cliente",
-            "email": "cliente1@example.com",
-            "password": "hashed_password_cliente1",
+            "role": "Client",
+            "email": "client1@example.com",
+            "password": "hashed_password_client1",
             "created_at": "2024-12-22 12:00:00",
             "updated_at": "2024-12-22 12:00:00"
         },
         {
-            "role": "Cliente",
-            "email": "cliente2@example.com",
-            "password": "hashed_password_cliente2",
+            "role": "Client",
+            "email": "client2@example.com",
+            "password": "hashed_password_client2",
             "created_at": "2024-12-22 12:00:00",
             "updated_at": "2024-12-22 12:00:00"
         }
@@ -87,6 +95,7 @@ The CLI automatically detects the database type via `DATABASE_URL` and handles t
 ## Features
 
 - [ ] Create a library to run seeder in the code and not with CLI
+- [x] Add cargo features to CLI.
 - [ ] Add `fake` in column value to create fake data.
 
 Example for `fake` feature:
