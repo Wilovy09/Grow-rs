@@ -8,19 +8,36 @@ pub async fn infer_database(
         match scheme {
             #[cfg(feature = "libsql")]
             "libsql" => {
-                println!("LibSQL");
                 grow_libsql::run_seeder(database_url, file_name).await;
                 Ok("LibSQL".to_string())
             }
+            #[cfg(not(feature = "libsql"))]
+            "libsql" => {
+                let error_message = format!(
+                    "The schema {} is only available with libsql feature\n\
+                    Run: cargo install grow-rs -F libsql\n\
+                    https://github.com/Wilovy09/Grow-rs",
+                    scheme
+                );
+                Err(error_message.into())
+            }
             #[cfg(feature = "sqlx")]
             "postgres" | "mysql" | "sqlite" => {
-                println!("SQLx database detected: {}", scheme);
                 grow_sqlx::run_seeder(&database_url, file_name).await?;
                 Ok(scheme.to_string())
             }
+            #[cfg(not(feature = "sqlx"))]
+            "postgres" | "mysql" | "sqlite" => {
+                let error_message = format!(
+                    "The schema {} is only available with sqlx feature\n\
+                        Run: cargo install grow-rs -F sqlx\n\
+                        https://github.com/Wilovy09/Grow-rs",
+                    scheme
+                );
+                Err(error_message.into())
+            }
             _ => {
                 let error_message = format!("Unknown schema: {}", scheme);
-                eprintln!("{}", error_message);
                 Err(error_message.into())
             }
         }
