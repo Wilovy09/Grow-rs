@@ -20,6 +20,10 @@ dotenv = "0.15.0"
 tokio = { version = "1.42.0", features = ["full"] }
 grow_libsql = { version = "0.1.0", path = "./grow_libsql", optional = true }
 grow_sqlx = { version = "0.1.0", path = "./grow_sqlx", optional = true }
+ron-edit = "0.2.0"
+srtemplate = "0.3.1"
+fake = "3.1.0"
+paste = "1.0.15"
 
 [[bin]]
 name = "grow"
