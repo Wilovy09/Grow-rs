@@ -1,6 +1,8 @@
 mod drivers;
 mod entry;
+#[cfg(feature = "fake")]
 mod fake;
+#[cfg(feature = "fake")]
 mod fake_generated;
 mod template;
 

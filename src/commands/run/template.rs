@@ -10,6 +10,7 @@ pub fn start<'a>() -> SrTemplate<'a> {
     let mut templating = SrTemplate::default();
     templating.set_delimiter("{", "}");
 
+    #[cfg(feature = "fake")]
     super::fake_generated::setup_faker_variables(&templating);
 
     templating.add_function("fake", super::fake::fake);

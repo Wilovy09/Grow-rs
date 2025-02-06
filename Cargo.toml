@@ -10,7 +10,8 @@ repository = "https://github.com/Wilovy09/Grow-rs"
 homepage = "https://github.com/Wilovy09/Grow-rs"
 
 [features]
-default = ["libsql", "sqlx"]
+default = ["libsql", "sqlx", "fake"]
+fake = ["dep:fake", "dep:paste"]
 libsql = ["dep:grow_libsql"]
 sqlx = ["dep:grow_sqlx"]
 
