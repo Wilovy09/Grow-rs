@@ -24,7 +24,7 @@ macro_rules! setup_faker {
     ///////////////////////////
     //        CONSTS         //
     ///////////////////////////
-    
+
     (@consts $locales:tt; [$($last:ident)?] []) => { };
 
     (@consts $locales:tt; [] [$var:ident, $($tail:ident ,)*]) => {
@@ -69,24 +69,26 @@ macro_rules! setup_faker {
         $sr_template.add_variable(stringify!($var), & $var);
     };
 
-    (@set-var [$sr_template:ident] [$locale:ident]; $var:ident) => { ::paste::paste! { 
-        $sr_template.add_variable(stringify!([< $var _ $locale >]), & [< $var _ $locale >]); 
+    (@set-var [$sr_template:ident] [$locale:ident]; $var:ident) => { ::paste::paste! {
+        $sr_template.add_variable(stringify!([< $var _ $locale >]), & [< $var _ $locale >]);
     } };
 
     ///////////////////////////
     //        MATCHS         //
     ///////////////////////////
-    (@match 
+    (@match
         [$kind:ident]
         $locales:tt;
         [ $($mod:ident => $fn:ident = $var:ident;)* ]
         // $mods:tt
     ) => {
         match $kind {
-            $(_ 
-                if 
-                    $kind >= setup_faker!(@match-key-start $locales; $var) && 
-                    $kind <= setup_faker!(@match-key-end $locales; $var) 
+            $(_
+                if (
+                    setup_faker!(@match-key-start $locales; $var)
+                    ..=
+                    setup_faker!(@match-key-end $locales; $var)
+                ).contains(&$kind)
                 => setup_faker! (@match-value [$kind] $locales; $mod => $fn = $var),
                 // => ,
             )*
@@ -136,7 +138,7 @@ setup_faker! {
     AR_SA,
     PT_BR,
     DE_DE;
-    
+
     mod address {
         CityPrefix = CITY_PREFIX;
         CitySuffix = CITY_SUFFIX;

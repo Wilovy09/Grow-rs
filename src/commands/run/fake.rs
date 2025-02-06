@@ -13,9 +13,10 @@ pub fn fake(args: &[String]) -> FuncResult {
     };
 
     let Some(result) = fake_generated::execute_faker(kind) else {
-        return Err(function::Error::RuntimeError(format!("Fake kind is not valid: {kind}")))
+        return Err(function::Error::RuntimeError(format!(
+            "Fake kind is not valid: {kind}"
+        )));
     };
 
     Ok(result)
 }
-

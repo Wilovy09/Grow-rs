@@ -1,8 +1,8 @@
 mod drivers;
 mod entry;
-mod template;
 mod fake;
 mod fake_generated;
+mod template;
 
 use std::env;
 use std::error::Error;

@@ -4,6 +4,8 @@ use srtemplate::SrTemplate;
 
 use super::entry::Entry;
 
+pub type RenderedTable = Vec<Vec<(String, String)>>;
+
 pub fn start<'a>() -> SrTemplate<'a> {
     let mut templating = SrTemplate::default();
     templating.set_delimiter("{", "}");
@@ -15,7 +17,7 @@ pub fn start<'a>() -> SrTemplate<'a> {
     templating
 }
 
-pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, Vec<Vec<(String, String)>>>, String> {
+pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, RenderedTable>, String> {
     let mut tables = BTreeMap::new();
 
     let templating = start();
@@ -27,7 +29,8 @@ pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, Vec<Vec<(St
                 table_name,
                 fields,
             } => {
-                let table: &mut Vec<Vec<(String, String)>> = tables.entry(table_name.clone()).or_default();
+                let table: &mut Vec<Vec<(String, String)>> =
+                    tables.entry(table_name.clone()).or_default();
 
                 for i in 0..count {
                     templating.add_variable("i", &i);
