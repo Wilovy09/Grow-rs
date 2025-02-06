@@ -2285,9 +2285,9 @@ dependencies = [
 
 [[package]]
 name = "srtemplate"
-version = "0.3.2"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9ad90c2a5c43001b6daf78bd7757b78fea66ee1fb9fbda3458e470b4657701f"
+checksum = "944315a94dabbd4b5132a8fa3cba634b661f1cde14e7bc3f6fe707c9963f7421"
 dependencies = [
  "dashmap",
  "paste",

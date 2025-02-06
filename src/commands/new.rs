@@ -38,7 +38,7 @@ pub fn create_seeder(name: &str) {
 
     match File::create(&file_path) {
         Ok(mut file) => {
-            let default_content = format!("(\n\t{}: [\n\t\t\n\t]\n)", name);
+            let default_content = format!("{{\n\t{}: [\n\t\t\n\t]\n}}", name);
             if let Err(e) = file.write_all(default_content.as_bytes()) {
                 eprintln!("Error: Unable to write to the file. Reason: {e}");
                 return;

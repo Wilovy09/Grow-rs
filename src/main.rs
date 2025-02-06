@@ -1,5 +1,7 @@
-use clap::{Parser, Subcommand};
 mod commands;
+mod utils;
+
+use clap::{Parser, Subcommand};
 use dotenv::dotenv;
 
 #[derive(Subcommand)]
@@ -22,21 +24,14 @@ struct Cli {
 async fn main() {
     dotenv().ok();
     let cli = Cli::parse();
-    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|err| {
-        eprintln!(
-            "Error: {}. Please, be sure to set the `DATABASE_URL` environment variable.",
-            err
-        );
-        std::process::exit(1);
-    });
 
     match &cli.command {
         Commands::Init => commands::init_seeder(),
         Commands::New { name } => commands::create_seeder(name),
         Commands::List => commands::list_seeders(),
         Commands::Run { file_name } => {
-            if let Err(e) = commands::infer_database(db_url, file_name.as_ref()).await {
-                eprintln!("Error while executing seeders: {}", e);
+            if let Err(e) = commands::run_seeder(file_name.as_ref()).await {
+                eprintln!("\x1b[1;31;91m[ERROR] {e}\x1b[0m");
             }
         }
     }
