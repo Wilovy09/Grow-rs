@@ -76,6 +76,50 @@ A seeder file in `.ron` format could have the following content:
 }
 ```
 
+## `.env` file
+
+### Configuration of `DATABASE_URL` for Different Databases
+
+1. **PostgresSQL, MySQL, SQLite (SQLx Support)**:
+   ```env
+   DATABASE_URL=sqlite://DB_NAME
+   ```
+
+   - This line configures the database URL for SQLite. The format sqlite://DB_NAME indicates that SQLite is being used, and DB_NAME is the name of the database.
+
+2. **libsql (TURSO)**
+    ```env
+    DATABASE_URL=libsql://DB_NAME.turso.io
+    TURSO_AUTH_TOKEN=eyJhbGciWJhNGRjIn0.igV6yDaKTuDKM7_5J-UWGOftULBg
+    ```
+
+    - Here, `DATABASE_URL` is configured to use libsql, which is a SQLite-compatible database with additional features like cloud synchronization. DB_NAME.turso.io is the URL of the database on Turso.
+    - `TURSO_AUTH_TOKEN` is an authentication token required to access the database on Turso.
+
+3. **Dry-run (Simulation)**
+    ```env
+    DATABASE_URL=mock://DB_NAME
+    ```
+
+    - This configuration is used to perform a simulation or "dry-run." Instead of connecting to a real database, a mock database is used to test commands without affecting real data.
+
+### Considerations for Windows: Using `/` Instead of `\`
+
+On operating systems like Windows, paths (file directories) are traditionally written using the backslash (\). However, in the context of software development, especially when working with cross-platform tools and languages, it is common to use the forward slash (/) instead of the backslash.
+
+- **Reason**: The forward slash (/) is the standard on Unix systems (like Linux and macOS) and is widely supported on Windows. Using / ensures that the code is compatible across different operating systems.
+- **Example**:
+    - Instead of writing:
+    ```env
+    DATABASE_URL=sqlite://C:\Users\User\Documents\DB_NAME
+    ```
+    - You should write:
+    ```env
+    DATABASE_URL=sqlite://C:/Users/User/Documents/DB_NAME
+    ```
+
+This approach avoids compatibility issues and errors when moving code between different operating systems.
+
 ## Database Compatibility
 
 Grow Seeder CLI is compatible with:
