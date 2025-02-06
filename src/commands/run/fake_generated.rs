@@ -1,6 +1,6 @@
 macro_rules! setup_faker {
     (
-        $($locale:ident),+;
+        $($name:literal = $locale:ident,)+;
         $(
         mod $mod:ident {
             $($fn:ident = $var:ident);*
@@ -128,16 +128,18 @@ macro_rules! setup_faker {
 // This can be made creating functions instead of numbers
 // or by accepting more parameters in `fake` function
 
+/*=START-SETUP=*/
 setup_faker! {
     // Locales
-    EN,
-    FR_FR,
-    ZH_TW,
-    ZH_CN,
-    JA_JP,
-    AR_SA,
-    PT_BR,
-    DE_DE;
+    "English" = EN,
+    "Arabic" = AR_SA,
+    "German" = DE_DE,
+    "French" = FR_FR,
+    "Japanese" = JA_JP,
+    "Protugese Brazilian" = PT_BR,
+    "Traditional Chinese" = ZH_TW,
+    "Simplified Chinese" = ZH_CN,
+    ;
 
     mod address {
         CityPrefix = CITY_PREFIX;
@@ -268,3 +270,5 @@ setup_faker! {
     //     LicencePlate = LICENCE_PLATE;
     // }
 }
+// NOTE: Don't write anything below the setup.
+// This is used to auto documentation
