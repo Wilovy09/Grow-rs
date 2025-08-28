@@ -48,31 +48,28 @@ A seeder file in `.ron` format could have the following content:
 
 ```ron
 {
-
     // Static data
-    // TABLE_NAME: DATA[],
+    // TABLE_NAME: DATA[(OBJECT)],
     User: [
-        {
-            "role": "Admin",
-            "email": "admin@example.com",
-            "password": "hashed_password_admin",
-            "created_at": "2024-12-22 12:00:00",
-            "updated_at": "2024-12-22 12:00:00"
-        },
-    ]
+        (
+            role: "Admin",
+            email: "admin@example.com",
+            password: "hashed_password_admin",
+            created_at: "2024-12-22 12:00:00",
+            updated_at: "2024-12-22 12:00:00"
+        )
+    ],
 
     // Repeated data
-    // TABLE_NAME(REPEATED_TIMES): DATA,
-    User(4): [
-        {
+    // TABLE_NAME(REPEATED_TIMES): {DATA},
+    User(4): {
             "role": "client",
-            "email": "{fake(EMAIL_PT_BR)}",
+            "email": "{fake(FREE_EMAIL)}",
             // Templating have `i` to know the iteration
             "password": "hashed_password_admin{i}",
             "created_at": "2024-12-22 12:00:{mul_u32(i, 10)}",
             "updated_at": "2024-12-22 12:00:{mul_u32(i, 20)}"
-        },
-    ]
+    },
 }
 ```
 
@@ -148,16 +145,14 @@ Example for `fake` feature:
 
 ```ron
 {
-    // Generate 20 fake users
-    User(20): [
-        {
-            "role": "CLIENT",
-            "email": "{fake(EMAIL)}",
-            "password": "{fake(PASSWORD)}",
-            // Multi-language support
-            "first_name": "{fake(FIRST_NAME_FR_FR)}",
-        },
-    ]
+    User(20): {
+            "role": "client",
+            "email": "{fake(FREE_EMAIL)}",
+            // Templating have `i` to know the iteration
+            "password": "hashed_password_admin{i}",
+            "created_at": "2024-12-22 12:00:{mul_u32(i, 10)}",
+            "updated_at": "2024-12-22 12:00:{mul_u32(i, 20)}"
+    },
 }
 ```
 
