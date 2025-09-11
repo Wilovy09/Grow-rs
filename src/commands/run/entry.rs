@@ -104,17 +104,17 @@ impl TryFrom<MapItem<'_>> for Entry {
             _ => return Err("Expect string, unit, table or struct as key".to_owned()),
         };
 
+        let normalized_table_name = normalize_table_name(table_name);
+
         if let Some(count) = repeated {
-            let (table_name, fields) = fields_from_value(map_item.value.content, table_name)?;
+            let (_, fields) = fields_from_value(map_item.value.content, &normalized_table_name)?;
 
             Ok(Entry::Repeat {
                 count,
-                table_name,
+                table_name: normalized_table_name,
                 fields,
             })
         } else {
-            let table_name = table_name.to_owned();
-
             let values = match map_item.value.content {
                 Value::List(list) => list
                     .0
@@ -124,12 +124,23 @@ impl TryFrom<MapItem<'_>> for Entry {
                     .map(|item| item.map(|i| i.1))
                     .collect::<Result<Vec<_>, String>>()?,
 
-                _ => return Err(format!("Expect list as value in {table_name}")),
+                _ => return Err(format!("Expect list as value in {normalized_table_name}")),
             };
 
-            Ok(Entry::Static { table_name, values })
+            Ok(Entry::Static {
+                table_name: normalized_table_name,
+                values,
+            })
         }
     }
+}
+
+fn normalize_table_name(table_name: &str) -> String {
+    if table_name.contains('.') {
+        return table_name.to_owned();
+    }
+
+    table_name.to_owned()
 }
 
 fn string_from_value(value: Value) -> Result<String, String> {
@@ -137,8 +148,8 @@ fn string_from_value(value: Value) -> Result<String, String> {
         Value::Int(i) => Ok(i.to_string()),
         Value::Float(v) => Ok(v.to_string()),
         Value::Str(v @ Str::Baked(_)) => Ok(v.to_string()),
-        Value::Str(Str::Raw { content: v, .. }) => Ok(format!("\"{v}\"")),
-        Value::Char(v) => Ok(v.to_string()),
+        Value::Str(Str::Raw { content: v, .. }) => Ok(format!("'{}'", v.replace("'", "''"))),
+        Value::Char(v) => Ok(format!("'{}'", v)),
         Value::Bool(v) => Ok(v.to_string()),
         _ => Err("Expected primitive as value".to_owned()),
     }
@@ -174,6 +185,8 @@ fn fields_from_value(
 
         Value::Struct(Struct { ident, fields }) => {
             let table_name = ident.map_or(table_name, |ident| ident.content).to_owned();
+            let normalized_table_name = normalize_table_name(&table_name);
+
             let fields = fields
                 .values
                 .into_iter()
@@ -186,7 +199,7 @@ fn fields_from_value(
                     Ok((key, value))
                 })
                 .collect::<Result<BTreeMap<_, _>, String>>()?;
-            Ok((table_name, fields))
+            Ok((normalized_table_name, fields))
         }
         _ => Err("Expect map or struct as value".to_owned()),
     }

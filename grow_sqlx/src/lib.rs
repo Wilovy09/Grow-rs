@@ -28,10 +28,16 @@ async fn insert_entry(
 ) -> Result<(), String> {
     let (columns, values) = entry.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
 
+    let escaped_table = escape_table_name(table);
+
     let sql_query = format!(
         "INSERT INTO {} ({}) VALUES ({})",
-        table,
-        columns.join(", "),
+        escaped_table,
+        columns
+            .iter()
+            .map(|col| escape_column_name(col))
+            .collect::<Vec<_>>()
+            .join(", "),
         values.join(", ")
     );
 
@@ -43,4 +49,21 @@ async fn insert_entry(
         .map_err(|err| format!("Cannot execute query ({sql_query}): {err}"))?;
 
     Ok(())
+}
+
+fn escape_table_name(table: &str) -> String {
+    if table.contains('.') {
+        let parts: Vec<&str> = table.split('.').collect();
+        parts
+            .iter()
+            .map(|part| format!("\"{}\"", part))
+            .collect::<Vec<_>>()
+            .join(".")
+    } else {
+        format!("\"{}\"", table)
+    }
+}
+
+fn escape_column_name(column: &str) -> String {
+    format!("\"{}\"", column)
 }
