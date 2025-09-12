@@ -24,7 +24,13 @@ impl Entry {
         let mut seeders_path = utils::get_seeders().await?;
 
         if let Some(file_name) = file_name {
-            seeders_path.push(file_name);
+            let file_name_with_extension = if file_name.ends_with(".ron") {
+                file_name.clone()
+            } else {
+                format!("{}.ron", file_name)
+            };
+
+            seeders_path.push(file_name_with_extension);
 
             Self::get_from_file(seeders_path)
         } else {
@@ -97,7 +103,36 @@ impl TryFrom<MapItem<'_>> for Entry {
 
                 (ident.content, Some(repeated_times))
             }
-            Value::Tuple(_) => return Err("Tuple as key must have name".to_owned()),
+            Value::Tuple(Tuple {
+                ident: None,
+                fields,
+            }) => {
+                if fields.values.len() != 2 {
+                    return Err("Tuple without identifier must have exactly 2 elements: (table_name, count)".to_owned());
+                }
+
+                let table_name = match &fields.values[0].content {
+                    Value::Str(Str::Baked(content) | Str::Raw { content, .. }) => *content,
+                    _ => {
+                        return Err(
+                            "First element of tuple must be a string for table name".to_owned()
+                        )
+                    }
+                };
+
+                let repeated_times = match &fields.values[1].content {
+                    Value::Int(i) => i
+                        .to_string()
+                        .parse::<usize>()
+                        .map_err(|err| format!("Cannot parse int: {err}"))?,
+                    Value::Float(_) => {
+                        return Err("Second element of tuple must be a number".to_owned())
+                    }
+                    _ => return Err("Second element of tuple must be a number".to_owned()),
+                };
+
+                (table_name, Some(repeated_times))
+            }
 
             Value::Struct(_) => todo!("Struct as key is planned"),
 
@@ -147,9 +182,9 @@ fn string_from_value(value: Value) -> Result<String, String> {
     match value {
         Value::Int(i) => Ok(i.to_string()),
         Value::Float(v) => Ok(v.to_string()),
-        Value::Str(v @ Str::Baked(_)) => Ok(v.to_string()),
-        Value::Str(Str::Raw { content: v, .. }) => Ok(format!("'{}'", v.replace("'", "''"))),
-        Value::Char(v) => Ok(format!("'{}'", v)),
+        Value::Str(Str::Baked(content)) => Ok(content.to_string()),
+        Value::Str(Str::Raw { content: v, .. }) => Ok(v.to_string()),
+        Value::Char(v) => Ok(v.to_string()),
         Value::Bool(v) => Ok(v.to_string()),
         _ => Err("Expected primitive as value".to_owned()),
     }

@@ -36,7 +36,7 @@ pub fn create_seeder(name: &str) {
     match File::create(&file_path) {
         Ok(mut file) => {
             let default_content = format!("\
-{{\n\t// Static data\n\t// {name}: DATA[(OBJECT)],\n\t// User: [\n\t//\t (\n\t//\t\t column_name: \"value\",\n\t//\t )\n\t// ],\n\n\t// Repeated data\n\t// {name}(REPEATED_TIMES): {{DATA}},\n\t// User(4): {{\n\t//\t\t \"column_name\": \"hashed_password_admin{{i}}\",\n\t// }},\n}}
+{{\n\t// Static data\n\t// {name}: DATA[(OBJECT)],\n\t// User: [\n\t//\t (\n\t//\t\t column_name: \"value\",\n\t//\t )\n\t// ],\n\n\t// Schema qualified tables\n\t// \"schema.table\": [\n\t//\t (\n\t//\t\t column_name: \"value\",\n\t//\t )\n\t// ],\n\n\t// Repeated data\n\t// {name}(REPEATED_TIMES): {{DATA}},\n\t// User(4): {{\n\t//\t\t \"column_name\": \"hashed_password_admin{{i}}\",\n\t// }},\n\n\t// Repeated data with schemas\n\t// (\"schema.table\", REPEATED_TIMES): {{DATA}},\n\t// (\"catalogs.roles\", 5): {{\n\t//\t\t \"name\": \"admin{{i}}\",\n\t// }},\n}}
 ");
             if let Err(e) = file.write_all(default_content.as_bytes()) {
                 eprintln!("Error: Unable to write to the file. Reason: {e}");

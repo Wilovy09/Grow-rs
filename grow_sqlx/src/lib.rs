@@ -30,6 +30,11 @@ async fn insert_entry(
 
     let escaped_table = escape_table_name(table);
 
+    let placeholders = (1..=values.len())
+        .map(|i| format!("${}", i))
+        .collect::<Vec<_>>()
+        .join(", ");
+
     let sql_query = format!(
         "INSERT INTO {} ({}) VALUES ({})",
         escaped_table,
@@ -38,10 +43,14 @@ async fn insert_entry(
             .map(|col| escape_column_name(col))
             .collect::<Vec<_>>()
             .join(", "),
-        values.join(", ")
+        placeholders
     );
 
-    let query = sqlx::query(&sql_query);
+    let mut query = sqlx::query(&sql_query);
+
+    for value in values {
+        query = query.bind(value);
+    }
 
     query
         .execute(pool)

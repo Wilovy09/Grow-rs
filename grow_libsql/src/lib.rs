@@ -40,6 +40,11 @@ async fn insert_entry(
 
     let escaped_table = escape_table_name(table);
 
+    let placeholders = (1..=values.len())
+        .map(|i| format!("?{}", i))
+        .collect::<Vec<_>>()
+        .join(", ");
+
     let sql_query = format!(
         "INSERT INTO {} ({}) VALUES ({})",
         escaped_table,
@@ -48,10 +53,12 @@ async fn insert_entry(
             .map(|col| escape_column_name(col))
             .collect::<Vec<_>>()
             .join(", "),
-        values.join(", ")
+        placeholders
     );
 
-    conn.execute(&sql_query, [0; 0])
+    let params: Vec<libsql::Value> = values.into_iter().map(|v| libsql::Value::Text(v)).collect();
+
+    conn.execute(&sql_query, params)
         .await
         .map_err(|err| format!("Error executing query ({sql_query}): {err}"))?;
 
