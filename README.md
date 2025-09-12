@@ -28,7 +28,8 @@ cargo install --git https://github.com/Wilovy09/Grow-rs
 | grow init            | Creates a `seeders/` folder in the current directory to store seeders.                      |
 | grow new \<NAME>     | Creates a new `.ron` file inside the `seeders/` folder. The file name will be `<NAME>.ron`. |
 | grow list            | Displays a list of all available seeders in the `seeders/` folder.                          |
-| grow run \[NAME.ron] | Run the seeder. If no file is specified, it will run all seeders in alphabetical order.     |
+| grow run             | Interactive mode: shows a multi-select list of all available seeders to run.                |
+| grow run \<NAME>     | Run a specific seeder (`.ron` extension is optional). Example: `grow run roles`             |
 
 ## Cargo features
 
@@ -48,28 +49,32 @@ A seeder file in `.ron` format could have the following content:
 
 ```ron
 {
-    // Static data
-    // TABLE_NAME: DATA[(OBJECT)],
-    User: [
-        (
-            role: "Admin",
-            email: "admin@example.com",
-            password: "hashed_password_admin",
-            created_at: "2024-12-22 12:00:00",
-            updated_at: "2024-12-22 12:00:00"
-        )
-    ],
+	// Static data
+	// test: DATA[(OBJECT)],
+	User: [
+	 (
+		 test_one: "value_one",
+	 )
+	],
 
-    // Repeated data
-    // TABLE_NAME(REPEATED_TIMES): {DATA},
-    User(4): {
-            "role": "client",
-            "email": "{fake(FREE_EMAIL)}",
-            // Templating have `i` to know the iteration
-            "password": "hashed_password_admin{i}",
-            "created_at": "2024-12-22 12:00:{mul_u32(i, 10)}",
-            "updated_at": "2024-12-22 12:00:{mul_u32(i, 20)}"
-    },
+	// Schema qualified tables
+	"schema.table": [
+	 (
+		 test_two: "value_two",
+	 )
+	],
+
+	// Repeated data
+	// test(REPEATED_TIMES): {DATA},
+	User(4): {
+		 "hashed_password": "hashed_password_admin{i}",
+	},
+
+	// Repeated data with schemas
+	// ("schema.table", REPEATED_TIMES): {DATA},
+	("catalogs.roles", 5): {
+		"name": "admin{i}",
+	},
 }
 ```
 
