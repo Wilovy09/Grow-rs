@@ -960,7 +960,7 @@ dependencies = [
 
 [[package]]
 name = "grow_libsql"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "libsql",
  "ron",
@@ -968,7 +968,7 @@ dependencies = [
 
 [[package]]
 name = "grow_sqlx"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ron",
  "sqlx",
