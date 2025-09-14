@@ -3,8 +3,9 @@ use std::collections::BTreeMap;
 use srtemplate::SrTemplate;
 
 use super::entry::Entry;
+use crate::sql_value::SqlValue;
 
-pub type RenderedTable = Vec<Vec<(String, String)>>;
+pub type RenderedTable = Vec<Vec<(String, SqlValue)>>;
 
 pub fn start<'a>() -> SrTemplate<'a> {
     let mut templating = SrTemplate::default();
@@ -30,7 +31,7 @@ pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, RenderedTab
                 table_name,
                 fields,
             } => {
-                let table: &mut Vec<Vec<(String, String)>> =
+                let table: &mut Vec<Vec<(String, SqlValue)>> =
                     tables.entry(table_name.clone()).or_default();
 
                 for i in 0..count {
@@ -43,11 +44,18 @@ pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, RenderedTab
                             format!("Cannot resolve key of {table_name}.{key}: {err}")
                         })?;
 
-                        let value = templating.render(value).map_err(|err| {
-                            format!("Cannot resolve value of {table_name}.{key}: {err}")
-                        })?;
+                        // For repeated data, render templates in text values only
+                        let rendered_value = match value {
+                            SqlValue::Text(text) => {
+                                let rendered = templating.render(text).map_err(|err| {
+                                    format!("Cannot resolve value of {table_name}.{key}: {err}")
+                                })?;
+                                SqlValue::Text(rendered)
+                            },
+                            other => other.clone(),
+                        };
 
-                        row.push((key, value));
+                        row.push((key, rendered_value));
                     }
 
                     table.push(row)
@@ -66,11 +74,18 @@ pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, RenderedTab
                             format!("Cannot resolve key of {table_name}.{key}: {err}")
                         })?;
 
-                        let value = templating.render(value).map_err(|err| {
-                            format!("Cannot resolve value of {table_name}.{key}: {err}")
-                        })?;
+                        // For static data, render templates in text values only
+                        let rendered_value = match value {
+                            SqlValue::Text(text) => {
+                                let rendered = templating.render(text).map_err(|err| {
+                                    format!("Cannot resolve value of {table_name}.{key}: {err}")
+                                })?;
+                                SqlValue::Text(rendered)
+                            },
+                            other => other.clone(),
+                        };
 
-                        row.push((key, value));
+                        row.push((key, rendered_value));
                     }
 
                     table.push(row)

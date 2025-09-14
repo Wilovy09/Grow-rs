@@ -1,8 +1,17 @@
 use std::collections::BTreeMap;
 
+#[derive(Debug, Clone)]
+pub enum SqlValue {
+    Integer(i64),
+    Float(f64),
+    Text(String),
+    Boolean(bool),
+    Null,
+}
+
 pub async fn run_seeder(
     db_url: String,
-    tables: BTreeMap<String, Vec<Vec<(String, String)>>>,
+    tables: BTreeMap<String, Vec<Vec<(String, SqlValue)>>>,
 ) -> Result<(), String> {
     let db_token = std::env::var("TURSO_AUTH_TOKEN").map_err(|err| {
         format!(
@@ -34,7 +43,7 @@ pub async fn run_seeder(
 async fn insert_entry(
     conn: &libsql::Connection,
     table: &str,
-    entry: Vec<(String, String)>,
+    entry: Vec<(String, SqlValue)>,
 ) -> Result<(), String> {
     let (columns, values) = entry.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
 
@@ -56,7 +65,16 @@ async fn insert_entry(
         placeholders
     );
 
-    let params: Vec<libsql::Value> = values.into_iter().map(|v| libsql::Value::Text(v)).collect();
+    let params: Vec<libsql::Value> = values
+        .into_iter()
+        .map(|v| match v {
+            SqlValue::Integer(i) => libsql::Value::Integer(i),
+            SqlValue::Float(f) => libsql::Value::Real(f),
+            SqlValue::Text(s) => libsql::Value::Text(s),
+            SqlValue::Boolean(b) => libsql::Value::Integer(if b { 1 } else { 0 }),
+            SqlValue::Null => libsql::Value::Null,
+        })
+        .collect();
 
     conn.execute(&sql_query, params)
         .await

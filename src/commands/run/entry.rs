@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use ron_edit::*;
 
+use crate::sql_value::SqlValue;
 use crate::utils;
 
 #[derive(Debug)]
@@ -11,11 +12,11 @@ pub enum Entry {
     Repeat {
         count: usize,
         table_name: String,
-        fields: BTreeMap<String, String>,
+        fields: BTreeMap<String, SqlValue>,
     },
     Static {
         table_name: String,
-        values: Vec<BTreeMap<String, String>>,
+        values: Vec<BTreeMap<String, SqlValue>>,
     },
 }
 
@@ -178,14 +179,26 @@ fn normalize_table_name(table_name: &str) -> String {
     table_name.to_owned()
 }
 
-fn string_from_value(value: Value) -> Result<String, String> {
+fn sql_value_from_value(value: Value) -> Result<SqlValue, String> {
     match value {
-        Value::Int(i) => Ok(i.to_string()),
-        Value::Float(v) => Ok(v.to_string()),
-        Value::Str(Str::Baked(content)) => Ok(content.to_string()),
-        Value::Str(Str::Raw { content: v, .. }) => Ok(v.to_string()),
-        Value::Char(v) => Ok(v.to_string()),
-        Value::Bool(v) => Ok(v.to_string()),
+        Value::Int(i) => {
+            let int_val = i
+                .to_string()
+                .parse::<i64>()
+                .map_err(|err| format!("Cannot parse int: {err}"))?;
+            Ok(SqlValue::Integer(int_val))
+        }
+        Value::Float(v) => {
+            let float_val = v
+                .to_string()
+                .parse::<f64>()
+                .map_err(|err| format!("Cannot parse float: {err}"))?;
+            Ok(SqlValue::Float(float_val))
+        }
+        Value::Str(Str::Baked(content)) => Ok(SqlValue::Text(content.to_string())),
+        Value::Str(Str::Raw { content: v, .. }) => Ok(SqlValue::Text(v.to_string())),
+        Value::Char(v) => Ok(SqlValue::Text(v.to_string())),
+        Value::Bool(v) => Ok(SqlValue::Boolean(v)),
         _ => Err("Expected primitive as value".to_owned()),
     }
 }
@@ -193,7 +206,7 @@ fn string_from_value(value: Value) -> Result<String, String> {
 fn fields_from_value(
     value: Value,
     table_name: &str,
-) -> Result<(String, BTreeMap<String, String>), String> {
+) -> Result<(String, BTreeMap<String, SqlValue>), String> {
     match value {
         Value::Map(m) => {
             let fields =
@@ -209,7 +222,7 @@ fn fields_from_value(
                         };
 
                         let value = field.content.value.content;
-                        let value = string_from_value(value)?;
+                        let value = sql_value_from_value(value)?;
 
                         Ok((key, value))
                     })
@@ -229,7 +242,7 @@ fn fields_from_value(
                     let key = field.content.key.to_owned();
 
                     let value = field.content.value.content;
-                    let value = string_from_value(value)?;
+                    let value = sql_value_from_value(value)?;
 
                     Ok((key, value))
                 })

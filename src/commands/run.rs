@@ -6,6 +6,8 @@ mod fake;
 mod fake_generated;
 mod template;
 
+use crate::sql_value::SqlValue;
+use std::collections::BTreeMap;
 use std::env;
 use std::error::Error;
 use std::str::FromStr;
@@ -85,7 +87,7 @@ async fn run_single_seeder(file_name: Option<&String>) -> Result<(), Box<dyn Err
                         "INSERT INTO {} ({}) VALUES ({})",
                         table,
                         columns.join(", "),
-                        values.join(", ")
+                        values.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(", ")
                     );
 
                     println!("{query}");
@@ -94,10 +96,58 @@ async fn run_single_seeder(file_name: Option<&String>) -> Result<(), Box<dyn Err
         }
 
         #[cfg(feature = "libsql")]
-        SchemeDriver::Libsql => grow_libsql::run_seeder(database_url, tables).await?,
+        SchemeDriver::Libsql => {
+            let converted_tables = convert_tables_for_libsql(tables);
+            grow_libsql::run_seeder(database_url, converted_tables).await?
+        },
         #[cfg(feature = "sqlx")]
-        SchemeDriver::Sqlx => grow_sqlx::run_seeder(database_url, tables).await?,
+        SchemeDriver::Sqlx => {
+            let converted_tables = convert_tables_for_sqlx(tables);
+            grow_sqlx::run_seeder(database_url, converted_tables).await?
+        },
     }
 
     Ok(())
+}
+
+#[cfg(feature = "libsql")]
+fn convert_tables_for_libsql(
+    tables: BTreeMap<String, template::RenderedTable>
+) -> BTreeMap<String, Vec<Vec<(String, grow_libsql::SqlValue)>>> {
+    tables.into_iter().map(|(table, data)| {
+        let converted_data = data.into_iter().map(|row| {
+            row.into_iter().map(|(col, val)| {
+                let converted_val = match val {
+                    SqlValue::Integer(i) => grow_libsql::SqlValue::Integer(i),
+                    SqlValue::Float(f) => grow_libsql::SqlValue::Float(f),
+                    SqlValue::Text(s) => grow_libsql::SqlValue::Text(s),
+                    SqlValue::Boolean(b) => grow_libsql::SqlValue::Boolean(b),
+                    SqlValue::Null => grow_libsql::SqlValue::Null,
+                };
+                (col, converted_val)
+            }).collect()
+        }).collect();
+        (table, converted_data)
+    }).collect()
+}
+
+#[cfg(feature = "sqlx")]
+fn convert_tables_for_sqlx(
+    tables: BTreeMap<String, template::RenderedTable>
+) -> BTreeMap<String, Vec<Vec<(String, grow_sqlx::SqlValue)>>> {
+    tables.into_iter().map(|(table, data)| {
+        let converted_data = data.into_iter().map(|row| {
+            row.into_iter().map(|(col, val)| {
+                let converted_val = match val {
+                    SqlValue::Integer(i) => grow_sqlx::SqlValue::Integer(i),
+                    SqlValue::Float(f) => grow_sqlx::SqlValue::Float(f),
+                    SqlValue::Text(s) => grow_sqlx::SqlValue::Text(s),
+                    SqlValue::Boolean(b) => grow_sqlx::SqlValue::Boolean(b),
+                    SqlValue::Null => grow_sqlx::SqlValue::Null,
+                };
+                (col, converted_val)
+            }).collect()
+        }).collect();
+        (table, converted_data)
+    }).collect()
 }
