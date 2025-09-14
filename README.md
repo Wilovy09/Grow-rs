@@ -50,30 +50,34 @@ A seeder file in `.ron` format could have the following content:
 ```ron
 {
 	// Static data
-	// test: DATA[(OBJECT)],
+	// products: DATA[(OBJECT)],
 	User: [
-	 (
-		 test_one: "value_one",
-	 )
+	    (
+		    column_name: "value",
+	    )
 	],
 
 	// Schema qualified tables
 	"schema.table": [
-	 (
-		 test_two: "value_two",
-	 )
+	    (
+			column_name: "value",
+		)
 	],
 
 	// Repeated data
-	// test(REPEATED_TIMES): {DATA},
+	// products(REPEATED_TIMES): {DATA},
 	User(4): {
-		 "hashed_password": "hashed_password_admin{i}",
+		"column_name": "hashed_password_admin{i}",
 	},
 
 	// Repeated data with schemas
 	// ("schema.table", REPEATED_TIMES): {DATA},
-	("catalogs.roles", 5): {
-		"name": "admin{i}",
+	("catalogs.products", 5): {
+		"name": "{fake(WORD)}",
+		"description": "{fake(WORD)}",
+		"price_cents": 10000,
+		// "price_cents": "{fake(DIGIT)}", // THIS FAKE FEATURE IS NOT SUPPORTED
+		"currency": "mxn",
 	},
 }
 ```
