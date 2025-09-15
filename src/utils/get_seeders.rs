@@ -10,7 +10,9 @@ pub async fn get_seeders() -> Result<PathBuf, String> {
         .unwrap_or_else(|_| Path::new("seeders").to_path_buf());
 
     match seeders_path.metadata() {
-        Ok(m) if !m.is_dir() => return Err(format!("{seeders_path:#?} is not a folder")),
+        Ok(m) if !m.is_dir() => {
+            return Err(format!("{seeders_path:#?} is not a folder"))
+        }
         Err(e) if e.kind() == io::ErrorKind::NotFound => {
             eprintln!("Creating folder {seeders_path:#?}");
             fs::create_dir(&seeders_path)

@@ -10,6 +10,8 @@ pub fn init_seeder() {
 
     match fs::create_dir(path) {
         Ok(_) => println!("Successfully created the 'seeders' directory."),
-        Err(e) => eprintln!("Error: Unable to create 'seeders' directory. Reason: {e}"),
+        Err(e) => eprintln!(
+            "Error: Unable to create 'seeders' directory. Reason: {e}"
+        ),
     }
 }

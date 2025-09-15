@@ -21,7 +21,9 @@ pub enum Entry {
 }
 
 impl Entry {
-    pub async fn get_from_seeders(file_name: Option<&String>) -> Result<Vec<Entry>, String> {
+    pub async fn get_from_seeders(
+        file_name: Option<&String>,
+    ) -> Result<Vec<Entry>, String> {
         let mut seeders_path = utils::get_seeders().await?;
 
         if let Some(file_name) = file_name {
@@ -57,7 +59,8 @@ impl Entry {
     }
 
     fn get_from_file(path: PathBuf) -> Result<Vec<Entry>, String> {
-        let content = fs::read_to_string(&path).map_err(utils::map_io_error(&path))?;
+        let content =
+            fs::read_to_string(&path).map_err(utils::map_io_error(&path))?;
 
         let content = File::try_from(content.as_str())
             .map_err(|err| format!("Cannot parse {path:#?}: {err}"))?;
@@ -82,7 +85,8 @@ impl TryFrom<MapItem<'_>> for Entry {
 
     fn try_from(map_item: MapItem) -> Result<Self, Self::Error> {
         let (table_name, repeated) = match map_item.key {
-            Value::Unit(content) | Value::Str(Str::Baked(content) | Str::Raw { content, .. }) => {
+            Value::Unit(content)
+            | Value::Str(Str::Baked(content) | Str::Raw { content, .. }) => {
                 (content, None)
             }
             Value::Tuple(Tuple {
@@ -90,7 +94,9 @@ impl TryFrom<MapItem<'_>> for Entry {
                 fields,
             }) => {
                 let Some(first_field) = fields.values.first() else {
-                    return Err("Tuple as key must have the repeated times".to_owned());
+                    return Err(
+                        "Tuple as key must have the repeated times".to_owned()
+                    );
                 };
 
                 let repeated_times = match &first_field.content {
@@ -98,8 +104,12 @@ impl TryFrom<MapItem<'_>> for Entry {
                         .to_string()
                         .parse::<usize>()
                         .map_err(|err| format!("Cannot parse int: {err}"))?,
-                    Value::Float(_) => return Err("Repeated times must be a number".to_owned()),
-                    _ => return Err("Repeated times must be a number".to_owned()),
+                    Value::Float(_) => {
+                        return Err("Repeated times must be a number".to_owned())
+                    }
+                    _ => {
+                        return Err("Repeated times must be a number".to_owned())
+                    }
                 };
 
                 (ident.content, Some(repeated_times))
@@ -127,9 +137,13 @@ impl TryFrom<MapItem<'_>> for Entry {
                         .parse::<usize>()
                         .map_err(|err| format!("Cannot parse int: {err}"))?,
                     Value::Float(_) => {
-                        return Err("Second element of tuple must be a number".to_owned())
+                        return Err("Second element of tuple must be a number"
+                            .to_owned())
                     }
-                    _ => return Err("Second element of tuple must be a number".to_owned()),
+                    _ => {
+                        return Err("Second element of tuple must be a number"
+                            .to_owned())
+                    }
                 };
 
                 (table_name, Some(repeated_times))
@@ -137,13 +151,20 @@ impl TryFrom<MapItem<'_>> for Entry {
 
             Value::Struct(_) => todo!("Struct as key is planned"),
 
-            _ => return Err("Expect string, unit, table or struct as key".to_owned()),
+            _ => {
+                return Err(
+                    "Expect string, unit, table or struct as key".to_owned()
+                )
+            }
         };
 
         let normalized_table_name = normalize_table_name(table_name);
 
         if let Some(count) = repeated {
-            let (_, fields) = fields_from_value(map_item.value.content, &normalized_table_name)?;
+            let (_, fields) = fields_from_value(
+                map_item.value.content,
+                &normalized_table_name,
+            )?;
 
             Ok(Entry::Repeat {
                 count,
@@ -160,7 +181,11 @@ impl TryFrom<MapItem<'_>> for Entry {
                     .map(|item| item.map(|i| i.1))
                     .collect::<Result<Vec<_>, String>>()?,
 
-                _ => return Err(format!("Expect list as value in {normalized_table_name}")),
+                _ => {
+                    return Err(format!(
+                        "Expect list as value in {normalized_table_name}"
+                    ))
+                }
             };
 
             Ok(Entry::Static {
@@ -195,8 +220,12 @@ fn sql_value_from_value(value: Value) -> Result<SqlValue, String> {
                 .map_err(|err| format!("Cannot parse float: {err}"))?;
             Ok(SqlValue::Float(float_val))
         }
-        Value::Str(Str::Baked(content)) => Ok(SqlValue::Text(content.to_string())),
-        Value::Str(Str::Raw { content: v, .. }) => Ok(SqlValue::Text(v.to_string())),
+        Value::Str(Str::Baked(content)) => {
+            Ok(SqlValue::Text(content.to_string()))
+        }
+        Value::Str(Str::Raw { content: v, .. }) => {
+            Ok(SqlValue::Text(v.to_string()))
+        }
         Value::Char(v) => Ok(SqlValue::Text(v.to_string())),
         Value::Bool(v) => Ok(SqlValue::Boolean(v)),
         _ => Err("Expected primitive as value".to_owned()),
@@ -215,10 +244,15 @@ fn fields_from_value(
                     .map(|field| {
                         let key = match field.content.key {
                             Value::Unit(content)
-                            | Value::Str(Str::Baked(content) | Str::Raw { content, .. }) => {
-                                content.to_owned()
+                            | Value::Str(
+                                Str::Baked(content) | Str::Raw { content, .. },
+                            ) => content.to_owned(),
+                            _ => {
+                                return Err(
+                                    "Expected unit or string as key in fields"
+                                        .to_owned(),
+                                )
                             }
-                            _ => return Err("Expected unit or string as key in fields".to_owned()),
                         };
 
                         let value = field.content.value.content;
@@ -232,7 +266,8 @@ fn fields_from_value(
         }
 
         Value::Struct(Struct { ident, fields }) => {
-            let table_name = ident.map_or(table_name, |ident| ident.content).to_owned();
+            let table_name =
+                ident.map_or(table_name, |ident| ident.content).to_owned();
             let normalized_table_name = normalize_table_name(&table_name);
 
             let fields = fields

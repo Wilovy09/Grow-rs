@@ -19,7 +19,9 @@ pub fn start<'a>() -> SrTemplate<'a> {
     templating
 }
 
-pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, RenderedTable>, String> {
+pub fn render_tables(
+    entries: Vec<Entry>,
+) -> Result<BTreeMap<String, RenderedTable>, String> {
     let mut tables = BTreeMap::new();
 
     let templating = start();
@@ -51,7 +53,7 @@ pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, RenderedTab
                                     format!("Cannot resolve value of {table_name}.{key}: {err}")
                                 })?;
                                 SqlValue::Text(rendered)
-                            },
+                            }
                             other => other.clone(),
                         };
 
@@ -81,7 +83,7 @@ pub fn render_tables(entries: Vec<Entry>) -> Result<BTreeMap<String, RenderedTab
                                     format!("Cannot resolve value of {table_name}.{key}: {err}")
                                 })?;
                                 SqlValue::Text(rendered)
-                            },
+                            }
                             other => other.clone(),
                         };
 

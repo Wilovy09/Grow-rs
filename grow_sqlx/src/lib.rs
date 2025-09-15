@@ -48,9 +48,9 @@ pub async fn run_seeder(
     // Install default drivers for AnyPool
     sqlx::any::install_default_drivers();
 
-    let pool = AnyPool::connect(&database_url)
-        .await
-        .map_err(|err| format!("Cannot connect to database ({database_url}): {err}"))?;
+    let pool = AnyPool::connect(&database_url).await.map_err(|err| {
+        format!("Cannot connect to database ({database_url}): {err}")
+    })?;
 
     for (table, data) in tables {
         for entry in data {

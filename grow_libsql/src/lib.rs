@@ -71,7 +71,9 @@ async fn insert_entry(
             SqlValue::Integer(i) => libsql::Value::Integer(i),
             SqlValue::Float(f) => libsql::Value::Real(f),
             SqlValue::Text(s) => libsql::Value::Text(s),
-            SqlValue::Boolean(b) => libsql::Value::Integer(if b { 1 } else { 0 }),
+            SqlValue::Boolean(b) => {
+                libsql::Value::Integer(if b { 1 } else { 0 })
+            }
             SqlValue::Null => libsql::Value::Null,
         })
         .collect();
