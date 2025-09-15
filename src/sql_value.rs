@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Debug, Clone)]
 pub enum SqlValue {
     Integer(i64),
@@ -8,14 +10,16 @@ pub enum SqlValue {
     Null,
 }
 
-impl SqlValue {
-    pub fn to_string(&self) -> String {
+impl SqlValue { }
+
+impl Display for SqlValue {
+   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SqlValue::Integer(i) => i.to_string(),
-            SqlValue::Float(f) => f.to_string(),
-            SqlValue::Text(s) => s.clone(),
-            SqlValue::Boolean(b) => b.to_string(),
-            SqlValue::Null => "NULL".to_string(),
+            SqlValue::Integer(i) =>  write!(f, "{i}"),
+            SqlValue::Float(fl) => write!(f, "{fl}"),
+            SqlValue::Text(s) => write!(f, "{s}"),
+            SqlValue::Boolean(b) => write!(f, "{b}"),
+            SqlValue::Null => write!(f, "NULL"),
         }
     }
 }
