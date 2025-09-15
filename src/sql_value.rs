@@ -10,12 +10,12 @@ pub enum SqlValue {
     Null,
 }
 
-impl SqlValue { }
+impl SqlValue {}
 
 impl Display for SqlValue {
-   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SqlValue::Integer(i) =>  write!(f, "{i}"),
+            SqlValue::Integer(i) => write!(f, "{i}"),
             SqlValue::Float(fl) => write!(f, "{fl}"),
             SqlValue::Text(s) => write!(f, "{s}"),
             SqlValue::Boolean(b) => write!(f, "{b}"),
