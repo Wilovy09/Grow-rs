@@ -84,10 +84,25 @@ impl TryFrom<MapItem<'_>> for Entry {
     type Error = String;
 
     fn try_from(map_item: MapItem) -> Result<Self, Self::Error> {
+        // Process inline attributes
+        let (mut repeat_count, mut schema_name): (
+            Option<usize>,
+            Option<String>,
+        ) = (None, None);
+
+        if let Some(ref attributes) = map_item.attributes {
+            // Convert Vec<WsLead<InlineAttribute>> to slice of InlineAttribute
+            let attrs: Vec<&ron_edit::InlineAttribute> =
+                attributes.iter().map(|w| &w.content).collect();
+            repeat_count = extract_repeat_count(&attrs);
+            schema_name = extract_schema_name(&attrs);
+        }
+
+        // Then process the key (fallback to old syntax if no attributes)
         let (table_name, repeated) = match map_item.key {
             Value::Unit(content)
             | Value::Str(Str::Baked(content) | Str::Raw { content, .. }) => {
-                (content, None)
+                (content, repeat_count)
             }
             Value::Tuple(Tuple {
                 ident: Some(ident),
@@ -158,17 +173,24 @@ impl TryFrom<MapItem<'_>> for Entry {
             }
         };
 
-        let normalized_table_name = normalize_table_name(table_name);
+        // Apply schema from inline attributes if present
+        let final_table_name = if let Some(schema) = schema_name {
+            if table_name.contains('.') {
+                table_name.to_owned() // Keep existing schema if table already has one
+            } else {
+                format!("{}.{}", schema, table_name) // Apply schema from attribute
+            }
+        } else {
+            normalize_table_name(table_name)
+        };
 
         if let Some(count) = repeated {
-            let (_, fields) = fields_from_value(
-                map_item.value.content,
-                &normalized_table_name,
-            )?;
+            let (_, fields) =
+                fields_from_value(map_item.value.content, &final_table_name)?;
 
             Ok(Entry::Repeat {
                 count,
-                table_name: normalized_table_name,
+                table_name: final_table_name,
                 fields,
             })
         } else {
@@ -183,13 +205,13 @@ impl TryFrom<MapItem<'_>> for Entry {
 
                 _ => {
                     return Err(format!(
-                        "Expect list as value in {normalized_table_name}"
+                        "Expect list as value in {final_table_name}"
                     ))
                 }
             };
 
             Ok(Entry::Static {
-                table_name: normalized_table_name,
+                table_name: final_table_name,
                 values,
             })
         }
@@ -286,4 +308,47 @@ fn fields_from_value(
         }
         _ => Err("Expect map or struct as value".to_owned()),
     }
+}
+
+/// Extract repeat count from inline attributes
+fn extract_repeat_count(
+    attributes: &[&ron_edit::InlineAttribute],
+) -> Option<usize> {
+    attributes.iter().find_map(|attr| match *attr {
+        ron_edit::InlineAttribute::KeyValue { ident, value, .. }
+            if *ident == "repeat" =>
+        {
+            // Try to parse the value as a number
+            if let ron_edit::Value::Int(int_value) = value {
+                int_value.to_string().parse::<usize>().ok()
+            } else {
+                None
+            }
+        }
+        _ => None,
+    })
+}
+
+/// Extract schema name from inline attributes
+fn extract_schema_name(
+    attributes: &[&ron_edit::InlineAttribute],
+) -> Option<String> {
+    attributes.iter().find_map(|attr| match *attr {
+        ron_edit::InlineAttribute::KeyValue { ident, value, .. }
+            if *ident == "schema" =>
+        {
+            // Extract string value
+            if let ron_edit::Value::Str(str_value) = value {
+                match str_value {
+                    ron_edit::Str::Baked(content) => Some(content.to_string()),
+                    ron_edit::Str::Raw { content, .. } => {
+                        Some(content.to_string())
+                    }
+                }
+            } else {
+                None
+            }
+        }
+        _ => None,
+    })
 }

@@ -1923,8 +1923,7 @@ dependencies = [
 [[package]]
 name = "ron-edit"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fabd9b84575959b746261318a9d79409c9c3f84baf358430901e43baa02a6df"
+source = "git+https://github.com/Wilovy09/ron-edit?branch=feat%2Finline-attributes#f96a7f5de7155a961979d43b15dc50fcc9f1ce11"
 dependencies = [
  "const_format",
  "derive_more",
