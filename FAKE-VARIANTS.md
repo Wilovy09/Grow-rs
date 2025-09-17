@@ -17,6 +17,56 @@ Examples:
 - `FIRST_NAME_ZH_TW` for first name in Chinese
 - `FIRST_NAME` by default the locale is English
 
+## Usage with Inline Attributes (New Syntax)
+
+The new inline attributes syntax makes it easier to organize your fake data seeders:
+
+```ron
+{
+    // Modern syntax with inline attributes
+    #[repeat = 50]
+    #[schema = "users"]
+    User: {
+        "first_name": "{fake(FIRST_NAME)}",
+        "last_name": "{fake(LAST_NAME)}",
+        "email": "{fake(SAFE_EMAIL)}",
+        "phone": "{fake(PHONE_NUMBER)}",
+        "address": "{fake(STREET_ADDRESS)}",
+        "city": "{fake(CITY)}",
+        "created_at": "2024-01-01 00:00:{i}",
+    },
+
+    // Multiline attributes for better readability
+    #[repeat = 20]
+    #[schema = "products"]
+    products: {
+        "name": "{fake(WORD)}",
+        "description": "{fake(SENTENCE_4_TO_10)}",
+        "price": "{fake(NUMBER_1_TO_1000)}",
+        "sku": "SKU-{i}",
+    },
+
+    // Mix locales
+    #[repeat = 10] customers: {
+        "name_en": "{fake(FIRST_NAME)}",
+        "name_ja": "{fake(FIRST_NAME_JA_JP)}",
+        "city_en": "{fake(CITY)}",
+        "city_de": "{fake(CITY_DE_DE)}",
+    },
+}
+```
+
+## Legacy Syntax (Still Supported)
+
+```ron
+{
+    User(50): {
+        "first_name": "{fake(FIRST_NAME)}",
+        "email": "{fake(SAFE_EMAIL)}",
+    },
+}
+```
+
 ## Fakers
 - [`address`](https://docs.rs/fake/3.1.0/fake/faker/address/raw/index.html)
   - [`CITY_PREFIX`](https://docs.rs/fake/3.1.0/fake/faker/address/raw/struct.CityPrefix.html)
