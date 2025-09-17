@@ -7,6 +7,11 @@
 
 Grow Seeder CLI is a command line tool written in Rust to manage database seeders. It allows to generate, list and run seeders defined in RON format for LibSQL, PostgreSQL, MySQL and SQLite compatible databases. Automatically detects the database type through the `DATABASE_URL` environment variable.
 
+> [!NOTE]
+> **v2.1.2** introduces a new **inline attributes syntax** for better seeder readability! 
+> Example: `#[repeat = 5] #[schema = "catalog"] products: {...}`
+> The legacy tuple syntax is still fully supported for backward compatibility.
+
 ## Requirements
 
 - **Environment variables**:
@@ -47,10 +52,58 @@ A seeder file in `.ron` format could have the following content:
 > [!NOTE]
 > If the ID is generated automatically by the db, it is not necessary to enter it in the seeder.
 
+### New Inline Attributes Syntax (Recommended)
+
+The modern way to define seeders uses inline attributes for better readability and maintainability:
+
 ```ron
 {
 	// Static data
-	// products: DATA[(OBJECT)],
+	User: [
+	    (
+		    column_name: "value",
+	    )
+	],
+
+	// Schema qualified tables using inline attributes
+	#[schema = "public"] roles: [
+		(
+			name: "admin",
+			permissions: "all",
+		)
+	],
+
+	// Repeated data using inline attributes
+	#[repeat = 4] User: {
+		"username": "user_{i}",
+		"password": "hashed_password_{i}",
+	},
+
+	// Schema qualified repeated data (multiline attributes)
+	#[repeat = 5]
+	#[schema = "catalogs"]
+	products: {
+		"name": "{fake(WORD)}",
+		"description": "{fake(WORD)}",
+		"price_cents": 10000,
+		"currency": "mxn",
+	},
+
+	// Single line attributes (also supported)
+	#[repeat = 3] #[schema = "inventory"] items: {
+		"sku": "ITEM_{i}",
+		"quantity": 100,
+	},
+}
+```
+
+### Legacy Syntax (Still Supported)
+
+For backward compatibility, the original tuple-based syntax is still supported:
+
+```ron
+{
+	// Static data
 	User: [
 	    (
 		    column_name: "value",
@@ -65,22 +118,32 @@ A seeder file in `.ron` format could have the following content:
 	],
 
 	// Repeated data
-	// products(REPEATED_TIMES): {DATA},
 	User(4): {
 		"column_name": "hashed_password_admin{i}",
 	},
 
 	// Repeated data with schemas
-	// ("schema.table", REPEATED_TIMES): {DATA},
 	("catalogs.products", 5): {
 		"name": "{fake(WORD)}",
 		"description": "{fake(WORD)}",
 		"price_cents": 10000,
-		// "price_cents": "{fake(DIGIT)}", // THIS FAKE FEATURE IS NOT SUPPORTED
 		"currency": "mxn",
 	},
 }
 ```
+
+### Inline Attributes Reference
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `#[repeat = N]` | Repeat the seeder N times with `{i}` as iteration counter | `#[repeat = 10] users: {...}` |
+| `#[schema = "name"]` | Specify database schema for the table | `#[schema = "public"] roles: [...]` |
+
+> [!TIP]
+> - Attributes can be on the same line: `#[repeat = 5] #[schema = "catalog"] table: {...}`
+> - Or on separate lines for better readability (multiline syntax)
+> - Use `{i}` in values to access the current iteration number (starting from 0)
+> - The new syntax is more readable and easier to maintain than the legacy tuple syntax
 
 ## `.env` file
 
@@ -137,6 +200,8 @@ Grow Seeder CLI is compatible with:
 - [x] **PostgreSQL**
 - [x] **MySQL**
 - [x] **SQLite**
+- [ ] **MSSQL**
+- [ ] **SurrealDB**
 
 The CLI automatically detects the database type via `DATABASE_URL` and handles the connection appropriately.
 
@@ -149,8 +214,36 @@ The CLI automatically detects the database type via `DATABASE_URL` and handles t
 - [ ] Create a library to run seeder in the code and not with CLI
 - [x] Add cargo features to CLI.
 - [x] Add `fake` in column value to create fake data.
+- [x] **New**: Inline attributes syntax for better readability and maintainability.
+- [x] **New**: Multiline attribute support for improved code organization.
 
-Example for `fake` feature:
+### Inline Attributes
+
+The latest version introduces a new inline attributes syntax that makes seeders more readable and maintainable:
+
+```ron
+{
+    // New inline attributes syntax
+    #[repeat = 20]
+    #[schema = "users"] 
+    User: {
+        "role": "client",
+        "email": "{fake(FREE_EMAIL)}",
+        // Templating have `i` to know the iteration
+        "password": "hashed_password_admin{i}",
+        "created_at": "2024-12-22 12:00:{mul_u32(i, 10)}",
+        "updated_at": "2024-12-22 12:00:{mul_u32(i, 20)}"
+    },
+}
+```
+
+**Benefits of the new syntax:**
+- **More readable**: Attributes are clearly separated from the table name
+- **Maintainable**: Easy to add or modify attributes
+- **Flexible**: Attributes can be on the same line or separate lines
+- **Backward compatible**: Legacy syntax still works
+
+### Legacy example using tuple syntax:
 
 ```ron
 {
