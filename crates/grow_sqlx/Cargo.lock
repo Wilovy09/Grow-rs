@@ -607,9 +607,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "grow_core"
+version = "0.1.0"
+
+[[package]]
 name = "grow_sqlx"
 version = "0.1.2"
 dependencies = [
+ "grow_core",
  "ron",
  "sqlx",
 ]
