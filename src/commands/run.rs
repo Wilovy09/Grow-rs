@@ -1,10 +1,10 @@
-mod drivers;
-mod entry;
+pub mod drivers;
+pub mod entry;
 #[cfg(feature = "fake")]
-mod fake;
+pub mod fake;
 #[cfg(feature = "fake")]
-mod fake_generated;
-mod template;
+pub mod fake_generated;
+pub mod template;
 
 use grow_core::SqlValue;
 use std::collections::BTreeMap;
