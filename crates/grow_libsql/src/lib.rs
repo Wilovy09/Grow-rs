@@ -77,7 +77,7 @@ async fn insert_entry(
     Ok(())
 }
 
-fn escape_table_name(table: &str) -> String {
+pub fn escape_table_name(table: &str) -> String {
     if table.contains('.') {
         let parts: Vec<&str> = table.split('.').collect();
         parts
@@ -90,6 +90,6 @@ fn escape_table_name(table: &str) -> String {
     }
 }
 
-fn escape_column_name(column: &str) -> String {
+pub fn escape_column_name(column: &str) -> String {
     format!("\"{}\"", column)
 }
