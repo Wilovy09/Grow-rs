@@ -1,0 +1,16 @@
+[package]
+name = "grow_surrealdb"
+description = "A internal library for grow with SurrealDB support"
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+authors = ["Wilovy09"]
+repository = "https://github.com/Wilovy09/Grow-rs"
+
+[dependencies]
+grow_core = { path = "../grow_core", version = "0.1.0" }
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ron = "0.8.1"
+surrealdb = { version = "2.3.9", features = ["kv-mem", "kv-rocksdb"] }

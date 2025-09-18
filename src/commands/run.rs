@@ -117,6 +117,15 @@ async fn run_single_seeder(
             let converted_tables = convert_tables_for_sqlx(tables);
             grow_sqlx::run_seeder(database_url, converted_tables).await?
         }
+        #[cfg(feature = "surrealdb")]
+        SchemeDriver::Surrealdb => {
+            let converted_tables = convert_tables_for_surrealdb(tables);
+            grow_surrealdb::run_seeder_with_connection_string(
+                &database_url,
+                &converted_tables,
+            )
+            .await?
+        }
     }
 
     Ok(())
@@ -132,6 +141,14 @@ fn convert_tables_for_libsql(
 
 #[cfg(feature = "sqlx")]
 fn convert_tables_for_sqlx(
+    tables: BTreeMap<String, template::RenderedTable>,
+) -> BTreeMap<String, Vec<Vec<(String, SqlValue)>>> {
+    // No need for conversion since both use the same SqlValue from grow_core
+    tables
+}
+
+#[cfg(feature = "surrealdb")]
+fn convert_tables_for_surrealdb(
     tables: BTreeMap<String, template::RenderedTable>,
 ) -> BTreeMap<String, Vec<Vec<(String, SqlValue)>>> {
     // No need for conversion since both use the same SqlValue from grow_core

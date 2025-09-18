@@ -17,6 +17,11 @@ Grow Seeder CLI is a command line tool written in Rust to manage database seeder
 - **Environment variables**:
   - `DATABASE_URL`: Database connection URL.
   - `TURSO_AUTH_TOKEN` (only for LibSQL/Turso databases).
+  - **SurrealDB authentication** (required for SurrealDB):
+    - `SURREAL_USER` | `SURREALDB_USER` | `SURREAL_USERNAME`: Root username (must be `root`)
+    - `SURREAL_PASS` | `SURREALDB_PASS` | `SURREAL_PASSWORD`: Root password
+    - `SURREAL_NS` | `SURREALDB_NS` | `SURREAL_NAMESPACE`: Namespace (default: `grow`)
+    - `SURREAL_DB` | `SURREALDB_DB` | `SURREAL_DATABASE`: Database name (default: `seeders`)
 
 ## Installation
 
@@ -172,6 +177,23 @@ For backward compatibility, the original tuple-based syntax is still supported:
 
     - This configuration is used to perform a simulation or "dry-run." Instead of connecting to a real database, a mock database is used to test commands without affecting real data.
 
+4. **SurrealDB**
+    ```env
+    DATABASE_URL=ws://localhost:8000
+    SURREAL_USER=root
+    SURREAL_PASS=your_password
+    SURREAL_NS=grow
+    SURREAL_DB=seeders
+    ```
+
+    - For SurrealDB, the `DATABASE_URL` must start with one of these protocols: `file://`, `rocksdb://`, `ws://`, `wss://`, `http://`, or `https://`
+    - SurrealDB requires authentication with the **root** user (username must be `root`)
+    - You can use any of these environment variable names:
+      - Username: `SURREAL_USER`, `SURREALDB_USER`, or `SURREAL_USERNAME` (must be `root`)
+      - Password: `SURREAL_PASS`, `SURREALDB_PASS`, or `SURREAL_PASSWORD`
+      - Namespace: `SURREAL_NS`, `SURREALDB_NS`, or `SURREAL_NAMESPACE` (default: `grow`)
+      - Database: `SURREAL_DB`, `SURREALDB_DB`, or `SURREAL_DATABASE` (default: `seeders`)
+
 ### Considerations for Windows: Using `/` Instead of `\`
 
 On operating systems like Windows, paths (file directories) are traditionally written using the backslash (\). However, in the context of software development, especially when working with cross-platform tools and languages, it is common to use the forward slash (/) instead of the backslash.
@@ -200,8 +222,8 @@ Grow Seeder CLI is compatible with:
 - [x] **PostgreSQL**
 - [x] **MySQL**
 - [x] **SQLite**
+- [x] **SurrealDB**: Requires authentication with the **root** user. See environment variables section above.
 - [ ] **MSSQL**
-- [ ] **SurrealDB**
 
 The CLI automatically detects the database type via `DATABASE_URL` and handles the connection appropriately.
 
