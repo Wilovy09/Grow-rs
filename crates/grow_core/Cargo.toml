@@ -1,0 +1,10 @@
+[package]
+name = "grow_core"
+description = "Core types and utilities for Grow-rs ecosystem"
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+authors = ["Wilovy09"]
+repository = "https://github.com/Wilovy09/Grow-rs"
+
+[dependencies]
