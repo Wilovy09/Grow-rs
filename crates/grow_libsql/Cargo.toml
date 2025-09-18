@@ -1,0 +1,13 @@
+[package]
+name = "grow_libsql"
+description = "A internal librarie for grow"
+license = "MIT"
+version = "0.1.2"
+edition = "2021"
+authors = ["Wilovy09"]
+repository = "https://github.com/Wilovy09/Grow-rs"
+
+[dependencies]
+grow_core = { path = "../grow_core" }
+libsql = { version = "0.6.0", default-features = false, features = ["remote"] }
+ron = "0.8.1"

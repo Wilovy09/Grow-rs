@@ -1,0 +1,20 @@
+[package]
+name = "grow_sqlx"
+description = "A internal librarie for grow"
+license = "MIT"
+version = "0.1.2"
+edition = "2021"
+authors = ["Wilovy09"]
+repository = "https://github.com/Wilovy09/Grow-rs"
+
+[dependencies]
+grow_core = { path = "../grow_core" }
+ron = "0.8.1"
+sqlx = { version = "0.8.2", features = [
+    "runtime-async-std",
+    "sqlite",
+    "postgres",
+    "mysql",
+    "macros",
+    "migrate",
+] }
