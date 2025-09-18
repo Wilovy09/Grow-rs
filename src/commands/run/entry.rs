@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use ron_edit::*;
 
-use crate::sql_value::SqlValue;
+use grow_core::SqlValue;
 use crate::utils;
 
 #[derive(Debug)]

@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use srtemplate::SrTemplate;
 
 use super::entry::Entry;
-use crate::sql_value::SqlValue;
+use grow_core::SqlValue;
 
 pub type RenderedTable = Vec<Vec<(String, SqlValue)>>;
 

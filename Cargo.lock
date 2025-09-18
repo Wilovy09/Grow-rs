@@ -579,9 +579,9 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.19"
+version = "0.99.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3da29a38df43d6f156149c9b43ded5e018ddff2a855cf2cfd62e8cd7d079c69f"
+checksum = "6edb4b64a43d977b8e99788fe3a04d483834fba1215a7e02caa415b626497f7f"
 dependencies = [
  "convert_case",
  "proc-macro2",
@@ -949,6 +949,7 @@ dependencies = [
  "clap",
  "dotenv",
  "fake",
+ "grow_core",
  "grow_libsql",
  "grow_sqlx",
  "inquire",
@@ -959,9 +960,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "grow_core"
+version = "0.1.0"
+
+[[package]]
 name = "grow_libsql"
 version = "0.1.2"
 dependencies = [
+ "grow_core",
  "libsql",
  "ron",
 ]
@@ -970,6 +976,7 @@ dependencies = [
 name = "grow_sqlx"
 version = "0.1.2"
 dependencies = [
+ "grow_core",
  "ron",
  "sqlx",
 ]
@@ -2008,9 +2015,9 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "semver"
-version = "1.0.25"
+version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f79dfe2d285b0488816f30e700a7438c5a73d816b5b7d3ac72fbc48b0d185e03"
+checksum = "d767eb0aabc880b29956c35734170f26ed551a859dbd361d140cdbeca61ab1e2"
 
 [[package]]
 name = "serde"
