@@ -21,11 +21,9 @@ impl FromStr for SchemeDriver {
             #[cfg(feature = "surrealdb")]
             return Ok(SchemeDriver::Surrealdb);
             #[cfg(not(feature = "surrealdb"))]
-            return Err(format!(
-                "SurrealDB memory connection is only available with surrealdb feature\n\
-                    Run: cargo install grow-rs -F surrealdb\n\
-                    https://github.com/Wilovy09/Grow-rs"
-            ));
+            return Err("SurrealDB memory connection is only available with surrealdb feature\n\
+                Run: cargo install grow-rs -F surrealdb\n\
+                https://github.com/Wilovy09/Grow-rs".to_string());
         }
 
         let Some((scheme, _)) = s.split_once("://") else {

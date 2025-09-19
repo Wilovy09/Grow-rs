@@ -43,12 +43,13 @@ cargo install --git https://github.com/Wilovy09/Grow-rs
 
 ## Cargo features
 
-| Feature   | Description                                            |
-| --------- | ------------------------------------------------------ |
-| `default` | Install `libsql`, `sqlx databases` and `fake` support. |
-| `fake`    | Enable `fake` support                                  |
-| `libsql`  | Install only `libsql` support.                         |
-| `sqlx`    | Install only `sqlx databases` support.                 |
+| Feature     | Description                                                         |
+| ----------- | ------------------------------------------------------------------- |
+| `default`   | Install `libsql`, `sqlx databases`, `surrealdb` and `fake` support. |
+| `fake`      | Enable `fake` support                                               |
+| `libsql`    | Install only `libsql` support.                                      |
+| `sqlx`      | Install only `sqlx databases` support.                              |
+| `surrealdb` | Install only `surreal database` support.                              |
 
 ## Seeder Example
 
