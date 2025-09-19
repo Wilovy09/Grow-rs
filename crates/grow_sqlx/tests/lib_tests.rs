@@ -1,6 +1,6 @@
 use grow_sqlx::{
-    escape_table_name, escape_column_name, SqlValue, ExternalSqlValue, 
-    sql_value_from_external, RenderedTable
+    escape_column_name, escape_table_name, sql_value_from_external,
+    ExternalSqlValue, RenderedTable, SqlValue,
 };
 use std::collections::BTreeMap;
 
@@ -8,19 +8,19 @@ use std::collections::BTreeMap;
 fn test_escape_table_name() {
     // Simple table name
     assert_eq!(escape_table_name("users"), "\"users\"");
-    
+
     // Table name with schema
     assert_eq!(escape_table_name("public.users"), "\"public\".\"users\"");
-    
+
     // Table name with multiple parts
     assert_eq!(
-        escape_table_name("database.schema.table"), 
+        escape_table_name("database.schema.table"),
         "\"database\".\"schema\".\"table\""
     );
-    
+
     // Table name with special characters
     assert_eq!(escape_table_name("user-table"), "\"user-table\"");
-    
+
     // Empty table name
     assert_eq!(escape_table_name(""), "\"\"");
 }
@@ -29,17 +29,17 @@ fn test_escape_table_name() {
 fn test_escape_column_name() {
     // Simple column name
     assert_eq!(escape_column_name("id"), "\"id\"");
-    
+
     // Column with special characters
     assert_eq!(escape_column_name("user_name"), "\"user_name\"");
-    
+
     // Column with spaces
     assert_eq!(escape_column_name("full name"), "\"full name\"");
-    
+
     // Column with special SQL keywords
     assert_eq!(escape_column_name("select"), "\"select\"");
     assert_eq!(escape_column_name("where"), "\"where\"");
-    
+
     // Empty column name
     assert_eq!(escape_column_name(""), "\"\"");
 }
@@ -53,7 +53,7 @@ fn test_sql_value_from_external_integer() {
         boolean: None,
         null: false,
     };
-    
+
     let result = sql_value_from_external(external);
     assert_eq!(result, SqlValue::Integer(42));
 }
@@ -67,7 +67,7 @@ fn test_sql_value_from_external_float() {
         boolean: None,
         null: false,
     };
-    
+
     let result = sql_value_from_external(external);
     assert_eq!(result, SqlValue::Float(3.14));
 }
@@ -81,7 +81,7 @@ fn test_sql_value_from_external_text() {
         boolean: None,
         null: false,
     };
-    
+
     let result = sql_value_from_external(external);
     assert_eq!(result, SqlValue::Text("hello world".to_string()));
 }
@@ -95,7 +95,7 @@ fn test_sql_value_from_external_boolean() {
         boolean: Some(true),
         null: false,
     };
-    
+
     let result = sql_value_from_external(external);
     assert_eq!(result, SqlValue::Boolean(true));
 }
@@ -109,7 +109,7 @@ fn test_sql_value_from_external_null() {
         boolean: None,
         null: true,
     };
-    
+
     let result = sql_value_from_external(external);
     assert_eq!(result, SqlValue::Null);
 }
@@ -124,7 +124,7 @@ fn test_sql_value_from_external_null_takes_precedence() {
         boolean: Some(true),
         null: true,
     };
-    
+
     let result = sql_value_from_external(external);
     assert_eq!(result, SqlValue::Null);
 }
@@ -139,7 +139,7 @@ fn test_sql_value_from_external_empty_defaults_to_null() {
         boolean: None,
         null: false,
     };
-    
+
     let result = sql_value_from_external(external);
     assert_eq!(result, SqlValue::Null);
 }
@@ -154,10 +154,10 @@ fn test_external_sql_value_creation() {
         boolean: None,
         null: false,
     };
-    
+
     assert_eq!(integer_external.integer, Some(100));
     assert!(!integer_external.null);
-    
+
     let null_external = ExternalSqlValue {
         integer: None,
         float: None,
@@ -165,7 +165,7 @@ fn test_external_sql_value_creation() {
         boolean: None,
         null: true,
     };
-    
+
     assert!(null_external.null);
 }
 
@@ -177,7 +177,7 @@ mod integration_tests {
     fn test_rendered_table_type() {
         // Test that RenderedTable type works correctly
         let mut table: RenderedTable = Vec::new();
-        
+
         let row = vec![
             ("id".to_string(), SqlValue::Integer(1)),
             ("name".to_string(), SqlValue::Text("Alice".to_string())),
@@ -185,12 +185,12 @@ mod integration_tests {
             ("active".to_string(), SqlValue::Boolean(true)),
             ("note".to_string(), SqlValue::Null),
         ];
-        
+
         table.push(row);
-        
+
         assert_eq!(table.len(), 1);
         assert_eq!(table[0].len(), 5);
-        
+
         // Verify each field
         assert_eq!(table[0][0].0, "id");
         assert_eq!(table[0][0].1, SqlValue::Integer(1));
@@ -198,11 +198,11 @@ mod integration_tests {
         assert_eq!(table[0][1].1, SqlValue::Text("Alice".to_string()));
         assert_eq!(table[0][4].1, SqlValue::Null);
     }
-    
+
     #[test]
     fn test_multiple_tables_with_rendered_table() {
         let mut tables: BTreeMap<String, RenderedTable> = BTreeMap::new();
-        
+
         // Users table
         let users_table = vec![
             vec![
@@ -214,35 +214,33 @@ mod integration_tests {
                 ("username".to_string(), SqlValue::Text("bob".to_string())),
             ],
         ];
-        
+
         // Products table
-        let products_table = vec![
-            vec![
-                ("id".to_string(), SqlValue::Integer(100)),
-                ("name".to_string(), SqlValue::Text("Widget".to_string())),
-                ("price".to_string(), SqlValue::Float(29.99)),
-                ("in_stock".to_string(), SqlValue::Boolean(true)),
-            ],
-        ];
-        
+        let products_table = vec![vec![
+            ("id".to_string(), SqlValue::Integer(100)),
+            ("name".to_string(), SqlValue::Text("Widget".to_string())),
+            ("price".to_string(), SqlValue::Float(29.99)),
+            ("in_stock".to_string(), SqlValue::Boolean(true)),
+        ]];
+
         tables.insert("users".to_string(), users_table);
         tables.insert("products".to_string(), products_table);
-        
+
         assert_eq!(tables.len(), 2);
         assert!(tables.contains_key("users"));
         assert!(tables.contains_key("products"));
-        
+
         // Verify users table structure
         let users = tables.get("users").unwrap();
         assert_eq!(users.len(), 2); // 2 rows
         assert_eq!(users[0].len(), 2); // 2 columns per row
-        
+
         // Verify products table structure
         let products = tables.get("products").unwrap();
         assert_eq!(products.len(), 1); // 1 row
         assert_eq!(products[0].len(), 4); // 4 columns per row
     }
-    
+
     #[test]
     fn test_external_sql_value_conversion_workflow() {
         // Test a complete workflow of converting external values
@@ -269,12 +267,12 @@ mod integration_tests {
                 null: true,
             },
         ];
-        
+
         let converted: Vec<SqlValue> = external_values
             .into_iter()
             .map(sql_value_from_external)
             .collect();
-        
+
         assert_eq!(converted.len(), 3);
         assert_eq!(converted[0], SqlValue::Integer(1));
         assert_eq!(converted[1], SqlValue::Text("test".to_string()));

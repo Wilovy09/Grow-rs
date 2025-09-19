@@ -8,7 +8,7 @@ fn test_sql_value_re_export() {
     let boolean_val = SqlValue::Boolean(true);
     let float_val = SqlValue::Float(3.14);
     let null_val = SqlValue::Null;
-    
+
     assert_eq!(integer_val, SqlValue::Integer(42));
     assert_eq!(text_val, SqlValue::Text("test".to_string()));
     assert_eq!(boolean_val, SqlValue::Boolean(true));
@@ -21,13 +21,13 @@ fn test_sql_value_from_conversions() {
     // Test From trait implementations work through re-export
     let from_i64: SqlValue = 100i64.into();
     assert_eq!(from_i64, SqlValue::Integer(100));
-    
+
     let from_f64: SqlValue = 2.718.into();
     assert_eq!(from_f64, SqlValue::Float(2.718));
-    
+
     let from_string: SqlValue = "hello".into();
     assert_eq!(from_string, SqlValue::Text("hello".to_string()));
-    
+
     let from_bool: SqlValue = false.into();
     assert_eq!(from_bool, SqlValue::Boolean(false));
 }
@@ -57,7 +57,7 @@ fn test_sql_value_type_checks() {
     // Test type checking methods work through re-export
     assert!(SqlValue::Null.is_null());
     assert!(!SqlValue::Integer(1).is_null());
-    
+
     assert_eq!(SqlValue::Integer(1).type_name(), "INTEGER");
     assert_eq!(SqlValue::Float(1.0).type_name(), "REAL");
     assert_eq!(SqlValue::Text("test".to_string()).type_name(), "TEXT");
@@ -67,39 +67,43 @@ fn test_sql_value_type_checks() {
 
 #[cfg(test)]
 mod module_visibility_tests {
-    use grow_rs::{utils, commands};
-    
+    use grow_rs::{commands, utils};
+
     #[test]
     fn test_utils_module_accessible() {
         // Test that utils module is properly exported
         let path = "/test/path";
         let error_mapper = utils::map_io_error(path);
-        
-        let not_found_error = std::io::Error::new(std::io::ErrorKind::NotFound, "Test error");
+
+        let not_found_error =
+            std::io::Error::new(std::io::ErrorKind::NotFound, "Test error");
         let result = error_mapper(not_found_error);
-        
+
         assert!(result.contains("not found"));
     }
-    
+
     #[test]
     fn test_commands_modules_accessible() {
         // Test that command modules are accessible
         let templating = commands::run::template::start();
         assert!(templating.render("simple text").is_ok());
     }
-    
+
     #[test]
     fn test_rendered_table_type_accessible() {
         // Test that RenderedTable type is accessible
         let mut table: commands::run::template::RenderedTable = Vec::new();
-        
+
         let row = vec![
             ("id".to_string(), grow_rs::SqlValue::Integer(1)),
-            ("name".to_string(), grow_rs::SqlValue::Text("Test".to_string())),
+            (
+                "name".to_string(),
+                grow_rs::SqlValue::Text("Test".to_string()),
+            ),
         ];
-        
+
         table.push(row);
-        
+
         assert_eq!(table.len(), 1);
         assert_eq!(table[0].len(), 2);
     }

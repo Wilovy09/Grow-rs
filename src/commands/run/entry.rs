@@ -4,8 +4,8 @@ use std::path::PathBuf;
 
 use ron_edit::*;
 
-use grow_core::SqlValue;
 use crate::utils;
+use grow_core::SqlValue;
 
 #[derive(Debug)]
 pub enum Entry {
