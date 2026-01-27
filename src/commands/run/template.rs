@@ -14,6 +14,7 @@ pub fn start<'a>() -> SrTemplate<'a> {
     #[cfg(feature = "fake")]
     super::fake_generated::setup_faker_variables(&templating);
 
+    #[cfg(feature = "fake")]
     templating.add_function("fake", super::fake::fake);
 
     templating

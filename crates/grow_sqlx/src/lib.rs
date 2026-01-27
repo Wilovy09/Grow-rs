@@ -112,3 +112,63 @@ pub fn escape_table_name(table: &str) -> String {
 pub fn escape_column_name(column: &str) -> String {
     format!("\"{}\"", column)
 }
+
+/// Execute a single SQL query with parameters (for seeder tracking)
+pub async fn execute_query(
+    database_url: String,
+    query: &str,
+) -> Result<(), String> {
+    sqlx::any::install_default_drivers();
+    let pool = AnyPool::connect(&database_url).await.map_err(|err| {
+        format!("Cannot connect to database ({database_url}): {err}")
+    })?;
+
+    sqlx::query(query)
+        .execute(&pool)
+        .await
+        .map_err(|err| format!("Error executing query ({query}): {err}"))?;
+
+    Ok(())
+}
+
+/// Execute a parameterized SQL query (for INSERT with values)
+pub async fn execute_query_with_params(
+    database_url: String,
+    query: &str,
+    timestamp: i64,
+    name: &str,
+) -> Result<(), String> {
+    sqlx::any::install_default_drivers();
+    let pool = AnyPool::connect(&database_url).await.map_err(|err| {
+        format!("Cannot connect to database ({database_url}): {err}")
+    })?;
+
+    sqlx::query(query)
+        .bind(timestamp)
+        .bind(name)
+        .execute(&pool)
+        .await
+        .map_err(|err| format!("Error executing query ({query}): {err}"))?;
+
+    Ok(())
+}
+
+/// Execute a query that returns a single integer result (for counting)
+pub async fn query_single_int(
+    database_url: String,
+    query: &str,
+    param: &str,
+) -> Result<i64, String> {
+    sqlx::any::install_default_drivers();
+    let pool = AnyPool::connect(&database_url).await.map_err(|err| {
+        format!("Cannot connect to database ({database_url}): {err}")
+    })?;
+
+    let row: (i64,) = sqlx::query_as(query)
+        .bind(param)
+        .fetch_one(&pool)
+        .await
+        .map_err(|err| format!("Error executing query ({query}): {err}"))?;
+
+    Ok(row.0)
+}
