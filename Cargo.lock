@@ -1807,7 +1807,7 @@ dependencies = [
  "grow_surrealdb",
  "inquire",
  "paste",
- "ron-edit",
+ "ron-next",
  "srtemplate",
  "tokio",
 ]
@@ -1818,7 +1818,7 @@ version = "0.1.0"
 
 [[package]]
 name = "grow_libsql"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "grow_core",
  "libsql",
@@ -1827,7 +1827,7 @@ dependencies = [
 
 [[package]]
 name = "grow_sqlx"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "grow_core",
  "ron",
@@ -4001,9 +4001,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "ron-edit"
-version = "0.2.0"
-source = "git+https://github.com/Wilovy09/ron-edit?branch=feat%2Finline-attributes#d02aa5db029850001e6c31976715eef98c7b9e28"
+name = "ron-next"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afea42ce2b784b8eef6625bb8f615fa0e78a8d848ea95ee33610cdc0ef3fd528"
 dependencies = [
  "const_format",
  "derive_more",
