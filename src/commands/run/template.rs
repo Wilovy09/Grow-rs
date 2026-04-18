@@ -20,8 +20,9 @@ pub fn start<'a>() -> SrTemplate<'a> {
     templating
 }
 
-pub fn render_tables(
+pub async fn render_tables(
     entries: Vec<Entry>,
+    database_url: &str,
 ) -> Result<BTreeMap<String, RenderedTable>, String> {
     let mut tables = BTreeMap::new();
 
@@ -44,15 +45,25 @@ pub fn render_tables(
 
                     for (key, value) in fields.iter() {
                         let key = templating.render(key).map_err(|err| {
-                            format!("Cannot resolve key of {table_name}.{key}: {err}")
+                            format!(
+                                "Cannot resolve key of {table_name}.{key}: {err}"
+                            )
                         })?;
 
-                        // For repeated data, render templates in text values only
                         let rendered_value = match value {
                             SqlValue::Text(text) => {
-                                let rendered = templating.render(text).map_err(|err| {
-                                    format!("Cannot resolve value of {table_name}.{key}: {err}")
-                                })?;
+                                let pre = super::query::resolve_query_placeholders(
+                                    text,
+                                    database_url,
+                                )
+                                .await?;
+                                let rendered =
+                                    templating.render(&pre).map_err(|err| {
+                                        format!(
+                                            "Cannot resolve value of \
+                                             {table_name}.{key}: {err}"
+                                        )
+                                    })?;
                                 SqlValue::Text(rendered)
                             }
                             other => other.clone(),
@@ -74,15 +85,25 @@ pub fn render_tables(
 
                     for (key, value) in fields.iter() {
                         let key = templating.render(key).map_err(|err| {
-                            format!("Cannot resolve key of {table_name}.{key}: {err}")
+                            format!(
+                                "Cannot resolve key of {table_name}.{key}: {err}"
+                            )
                         })?;
 
-                        // For static data, render templates in text values only
                         let rendered_value = match value {
                             SqlValue::Text(text) => {
-                                let rendered = templating.render(text).map_err(|err| {
-                                    format!("Cannot resolve value of {table_name}.{key}: {err}")
-                                })?;
+                                let pre = super::query::resolve_query_placeholders(
+                                    text,
+                                    database_url,
+                                )
+                                .await?;
+                                let rendered =
+                                    templating.render(&pre).map_err(|err| {
+                                        format!(
+                                            "Cannot resolve value of \
+                                             {table_name}.{key}: {err}"
+                                        )
+                                    })?;
                                 SqlValue::Text(rendered)
                             }
                             other => other.clone(),
