@@ -30,7 +30,7 @@ impl SeederTracker {
     pub async fn ensure_seeds_table(&self) -> Result<(), Box<dyn Error>> {
         let create_table_sql = match self.scheme {
             SchemeDriver::Mock => {
-                "CREATE TABLE IF NOT EXISTS seeds (
+                "CREATE TABLE IF NOT EXISTS _grow_seeders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp INTEGER NOT NULL,
                 name TEXT NOT NULL UNIQUE
@@ -38,7 +38,7 @@ impl SeederTracker {
             }
             #[cfg(feature = "libsql")]
             SchemeDriver::Libsql => {
-                "CREATE TABLE IF NOT EXISTS seeds (
+                "CREATE TABLE IF NOT EXISTS _grow_seeders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp INTEGER NOT NULL,
                 name TEXT NOT NULL UNIQUE
@@ -49,21 +49,21 @@ impl SeederTracker {
                 // Generate database-specific SQL
                 match self.get_database_type() {
                     "postgres" => {
-                        "CREATE TABLE IF NOT EXISTS seeds (
+                        "CREATE TABLE IF NOT EXISTS _grow_seeders (
                             id SERIAL PRIMARY KEY,
                             timestamp BIGINT NOT NULL,
                             name TEXT NOT NULL UNIQUE
                         )"
                     }
                     "mysql" => {
-                        "CREATE TABLE IF NOT EXISTS seeds (
+                        "CREATE TABLE IF NOT EXISTS _grow_seeders (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             timestamp BIGINT NOT NULL,
                             name VARCHAR(255) NOT NULL UNIQUE
                         )"
                     }
                     "sqlite" => {
-                        "CREATE TABLE IF NOT EXISTS seeds (
+                        "CREATE TABLE IF NOT EXISTS _grow_seeders (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             timestamp INTEGER NOT NULL,
                             name TEXT NOT NULL UNIQUE
@@ -71,7 +71,7 @@ impl SeederTracker {
                     }
                     _ => {
                         // Fallback to PostgreSQL syntax for unknown databases
-                        "CREATE TABLE IF NOT EXISTS seeds (
+                        "CREATE TABLE IF NOT EXISTS _grow_seeders (
                             id SERIAL PRIMARY KEY,
                             timestamp BIGINT NOT NULL,
                             name TEXT NOT NULL UNIQUE
@@ -113,7 +113,7 @@ impl SeederTracker {
         &self,
         seeder_name: &str,
     ) -> Result<bool, Box<dyn Error>> {
-        let query = "SELECT COUNT(*) FROM seeds WHERE name = ?";
+        let query = "SELECT COUNT(*) FROM _grow_seeders WHERE name = ?";
 
         match self.scheme {
             SchemeDriver::Mock => {
@@ -135,13 +135,10 @@ impl SeederTracker {
     pub async fn mark_seeder_executed(
         &self,
         seeder_name: &str,
+        timestamp: i64,
     ) -> Result<(), Box<dyn Error>> {
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as i64;
 
-        let query = "INSERT INTO seeds (timestamp, name) VALUES (?, ?)";
+        let query = "INSERT INTO _grow_seeders (timestamp, name) VALUES (?, ?)";
 
         match self.scheme {
             SchemeDriver::Mock => {
@@ -165,7 +162,7 @@ impl SeederTracker {
             SchemeDriver::Sqlx => {
                 // Update query syntax for SQLx (use $1, $2 instead of ?)
                 let sqlx_query =
-                    "INSERT INTO seeds (timestamp, name) VALUES ($1, $2)";
+                    "INSERT INTO _grow_seeders (timestamp, name) VALUES ($1, $2)";
                 grow_sqlx::execute_query_with_params(
                     self.database_url.clone(),
                     sqlx_query,
@@ -199,7 +196,7 @@ impl SeederTracker {
         &self,
         seeder_name: &str,
     ) -> Result<bool, Box<dyn Error>> {
-        let query = "SELECT COUNT(*) FROM seeds WHERE name = ?";
+        let query = "SELECT COUNT(*) FROM _grow_seeders WHERE name = ?";
         let count = grow_libsql::query_single_int(
             self.database_url.clone(),
             query,
@@ -227,7 +224,7 @@ impl SeederTracker {
         &self,
         seeder_name: &str,
     ) -> Result<bool, Box<dyn Error>> {
-        let query = "SELECT COUNT(*) FROM seeds WHERE name = $1";
+        let query = "SELECT COUNT(*) FROM _grow_seeders WHERE name = $1";
         let count = grow_sqlx::query_single_int(
             self.database_url.clone(),
             query,
@@ -258,7 +255,7 @@ impl SeederTracker {
         // For SurrealDB, we'll use the grow_surrealdb crate's functionality
         // This is a simplified implementation - the actual implementation should use grow_surrealdb
         println!(
-            "INSERT INTO seeds {{ timestamp: {}, name: '{}' }}",
+            "INSERT INTO _grow_seeders {{ timestamp: {}, name: '{}' }}",
             timestamp, _seeder_name
         );
         Ok(())
