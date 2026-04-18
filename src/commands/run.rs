@@ -166,6 +166,18 @@ pub async fn run_seeder_interactive() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn read_seeder_timestamp(seeder_name: &str) -> i64 {
+    seeder_name
+        .split_once('_')
+        .and_then(|(ts, _)| ts.parse::<i64>().ok())
+        .unwrap_or_else(|| {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as i64
+        })
+}
+
 async fn run_single_seeder_with_tracking(
     file_name: Option<&String>,
 ) -> Result<(), Box<dyn Error>> {
@@ -201,8 +213,9 @@ async fn run_single_seeder_with_tracking(
     // Execute the seeder
     run_single_seeder(file_name).await?;
 
-    // Mark as executed
-    tracker.mark_seeder_executed(&seeder_name).await?;
+    // Mark as executed using timestamp from file
+    let timestamp = read_seeder_timestamp(&seeder_name);
+    tracker.mark_seeder_executed(&seeder_name, timestamp).await?;
 
     Ok(())
 }
