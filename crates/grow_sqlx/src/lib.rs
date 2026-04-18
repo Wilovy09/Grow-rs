@@ -1,5 +1,5 @@
 pub use grow_core::SqlValue;
-use sqlx::AnyPool;
+use sqlx::{AnyPool, Row};
 use std::collections::BTreeMap;
 
 pub type RenderedTable = Vec<Vec<(String, SqlValue)>>;
@@ -151,6 +151,37 @@ pub async fn execute_query_with_params(
         .map_err(|err| format!("Error executing query ({query}): {err}"))?;
 
     Ok(())
+}
+
+/// Execute a query and return the first column of the first row as text
+pub async fn query_single_text(
+    database_url: String,
+    sql: &str,
+) -> Result<String, String> {
+    sqlx::any::install_default_drivers();
+    let pool = AnyPool::connect(&database_url).await.map_err(|err| {
+        format!("Cannot connect to database ({database_url}): {err}")
+    })?;
+
+    let row = sqlx::query(sql)
+        .fetch_one(&pool)
+        .await
+        .map_err(|err| format!("Error executing query ({sql}): {err}"))?;
+
+    if let Ok(s) = row.try_get::<String, _>(0) {
+        return Ok(s);
+    }
+    if let Ok(i) = row.try_get::<i64, _>(0) {
+        return Ok(i.to_string());
+    }
+    if let Ok(f) = row.try_get::<f64, _>(0) {
+        return Ok(f.to_string());
+    }
+    if let Ok(b) = row.try_get::<bool, _>(0) {
+        return Ok(b.to_string());
+    }
+
+    Err(format!("Could not convert query result to text for: {sql}"))
 }
 
 /// Execute a query that returns a single integer result (for counting)

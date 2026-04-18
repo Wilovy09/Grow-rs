@@ -138,6 +138,49 @@ pub async fn execute_query(
     Ok(())
 }
 
+/// Execute a query and return the first column of the first row as text
+pub async fn query_single_text(
+    db_url: String,
+    sql: &str,
+) -> Result<String, String> {
+    let db_token = std::env::var("TURSO_AUTH_TOKEN").map_err(|err| {
+        format!("`TURSO_AUTH_TOKEN`: {err}")
+    })?;
+
+    let client = libsql::Builder::new_remote(db_url, db_token)
+        .build()
+        .await
+        .map_err(|err| format!("Could not build the database client: {err}"))?;
+
+    let conn = client
+        .connect()
+        .map_err(|err| format!("Could not connect to the database: {err}"))?;
+
+    let mut rows = conn
+        .query(sql, ())
+        .await
+        .map_err(|err| format!("Error executing query ({sql}): {err}"))?;
+
+    if let Some(row) = rows
+        .next()
+        .await
+        .map_err(|err| format!("Error reading row: {err}"))?
+    {
+        let value = row
+            .get(0)
+            .map_err(|err| format!("Error getting column: {err}"))?;
+        return Ok(match value {
+            libsql::Value::Text(s) => s,
+            libsql::Value::Integer(i) => i.to_string(),
+            libsql::Value::Real(f) => f.to_string(),
+            libsql::Value::Blob(b) => String::from_utf8_lossy(&b).to_string(),
+            libsql::Value::Null => "NULL".to_string(),
+        });
+    }
+
+    Err(format!("Query returned no rows: {sql}"))
+}
+
 /// Execute a query that returns a single integer result (for counting)
 pub async fn query_single_int(
     db_url: String,
