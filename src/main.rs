@@ -32,6 +32,8 @@ async fn main() {
     dotenv().ok();
     let cli = Cli::parse();
 
+    commands::ensure_seeders_dir();
+
     match &cli.command {
         Commands::Init => commands::init_seeder(),
         Commands::New { name } => commands::create_seeder(name),

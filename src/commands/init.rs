@@ -1,5 +1,16 @@
 use std::{fs, path::Path};
 
+pub fn ensure_seeders_dir() {
+    let path = Path::new("seeders");
+    if !path.exists() {
+        if let Err(e) = fs::create_dir(path) {
+            eprintln!(
+                "Error: Unable to create 'seeders' directory. Reason: {e}"
+            );
+        }
+    }
+}
+
 pub fn init_seeder() {
     let path = Path::new("seeders");
 
