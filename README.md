@@ -8,8 +8,12 @@
 Grow Seeder CLI is a command line tool written in Rust to manage database seeders. It allows to generate, list and run seeders defined in RON format for LibSQL, PostgreSQL, MySQL and SQLite compatible databases. Automatically detects the database type through the `DATABASE_URL` environment variable.
 
 > [!NOTE]
-> **v2.1.2** introduces a new **inline attributes syntax** for better seeder readability! 
-> Example: `#[repeat = 5] #[schema = "catalog"] products: {...}`
+> **v2.2.0** introduces:
+> - **Auto-init**: the `seeders/` folder is created automatically on any command — no need to run `grow init` first.
+> - **Timestamped seeders**: `grow new <NAME>` creates `TIMESTAMP_NAME.ron` files for ordered execution.
+> - **`{query(SQL)}`**: execute a SQL query inside a seeder field and use the returned value.
+>
+> **v2.1.2** introduced **inline attributes syntax**: `#[repeat = 5] #[schema = "catalog"] products: {...}`  
 > The legacy tuple syntax is still fully supported for backward compatibility.
 
 ## Requirements
@@ -33,13 +37,15 @@ cargo install --git https://github.com/Wilovy09/Grow-rs
 
 ## Commands
 
-| Commands             | Functions                                                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| grow init            | Creates a `seeders/` folder in the current directory to store seeders.                      |
-| grow new \<NAME>     | Creates a new `.ron` file inside the `seeders/` folder. The file name will be `<NAME>.ron`. |
-| grow list            | Displays a list of all available seeders in the `seeders/` folder.                          |
-| grow run             | Interactive mode: shows a multi-select list of all available seeders to run.                |
-| grow run \<NAME>     | Run a specific seeder (`.ron` extension is optional). Example: `grow run roles`             |
+| Commands             | Functions                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| grow init            | Creates a `seeders/` folder in the current directory. Runs automatically on any other command if folder is absent. |
+| grow new \<NAME>     | Creates `TIMESTAMP_NAME.ron` inside `seeders/`. The timestamp prefix ensures seeders run in creation order.        |
+| grow list            | Displays a list of all available seeders in the `seeders/` folder.                                                 |
+| grow run             | Interactive mode: shows a multi-select list of pending seeders to run.                                             |
+| grow run \<NAME>     | Run a specific seeder (`.ron` extension is optional). Example: `grow run 1700000000_roles`                         |
+| grow run --all       | Run all pending seeders in order.                                                                                   |
+| grow status          | Show execution status of all seeders.                                                                              |
 
 ## Cargo features
 
@@ -151,6 +157,31 @@ For backward compatibility, the original tuple-based syntax is still supported:
 > - Use `{i}` in values to access the current iteration number (starting from 0)
 > - The new syntax is more readable and easier to maintain than the legacy tuple syntax
 
+### Template Functions Reference
+
+| Function | Description | Example |
+|----------|-------------|---------|
+| `{fake(TYPE)}` | Generate fake data of the given type | `"{fake(WORD)}"`, `"{fake(FREE_EMAIL)}"` |
+| `{i}` | Current iteration index (only inside `#[repeat = N]`) | `"user_{i}"` |
+| `{query(SQL)}` | Execute a SQL query and use the first column of the first row | `"{query(SELECT id FROM roles WHERE name = 'admin')}"` |
+
+> [!NOTE]
+> `{query(SQL)}` runs against your `DATABASE_URL` database at seeder execution time. The SQL must return at least one row; its first column is used as the field value. Nested parentheses in SQL are supported (e.g. subqueries, function calls). Always use fully qualified table names when working with non-default schemas (e.g. `catalogs.roles`, not just `roles`).
+
+Example using `{query(...)}`:
+
+```ron
+{
+    #[repeat = 3]
+    #[schema = "store"]
+    products: {
+        "name": "{fake(WORD)}",
+        "currency": "{query(SELECT code FROM catalogs.currencies WHERE active = true LIMIT 1)}",
+        "role_id": "{query(SELECT id FROM catalogs.roles WHERE name = 'editor')}",
+    },
+}
+```
+
 ## `.env` file
 
 ### Configuration of `DATABASE_URL` for Different Databases
@@ -239,6 +270,9 @@ The CLI automatically detects the database type via `DATABASE_URL` and handles t
 - [x] Add `fake` in column value to create fake data.
 - [x] **New**: Inline attributes syntax for better readability and maintainability.
 - [x] **New**: Multiline attribute support for improved code organization.
+- [x] **New**: Auto-init — `seeders/` folder created automatically on any command.
+- [x] **New**: Timestamped seeder filenames (`TIMESTAMP_NAME.ron`) for ordered execution.
+- [x] **New**: `{query(SQL)}` — embed SQL query results as field values in seeders.
 
 ### Inline Attributes
 
