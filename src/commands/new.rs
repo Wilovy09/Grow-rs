@@ -6,7 +6,11 @@ use std::{
 
 pub fn create_seeder(name: &str) {
     let dir = Path::new("seeders");
-    let file_path = dir.join(format!("{name}.ron"));
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let file_path = dir.join(format!("{timestamp}_{name}.ron"));
 
     if !dir.exists() {
         eprintln!("Error: The 'seeders' directory does not exist.");
@@ -42,7 +46,9 @@ pub fn create_seeder(name: &str) {
                 eprintln!("Error: Unable to write to the file. Reason: {e}");
                 return;
             }
-            println!("Successfully created the seeder file: {name}.ron");
+            println!(
+                "Successfully created the seeder file: {timestamp}_{name}.ron"
+            );
         }
         Err(e) => eprintln!("Error: Unable to create file. Reason: {e}"),
     }
