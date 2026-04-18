@@ -219,7 +219,7 @@ async fn run_single_seeder(
 
     let entries = Entry::get_from_seeders(file_name).await?;
 
-    let tables = template::render_tables(entries)?;
+    let tables = template::render_tables(entries, &database_url).await?;
 
     let scheme = SchemeDriver::from_str(&database_url)?;
 

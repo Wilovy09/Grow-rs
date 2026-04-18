@@ -2,19 +2,18 @@ use grow_rs::commands::run::{entry::Entry, template};
 use grow_rs::SqlValue;
 use std::collections::BTreeMap;
 
+const MOCK_DB: &str = "mock://";
+
 #[test]
 fn test_template_start() {
     let templating = template::start();
 
-    // Test that the template engine is configured correctly
-    // We can't test internal state directly, but we can test that it works
     assert!(templating.render("simple text").is_ok());
-    assert!(templating.render("text with {placeholder}").is_err()); // Should fail without variable
+    assert!(templating.render("text with {placeholder}").is_err());
 }
 
-#[test]
-fn test_render_tables_static_entry() {
-    // Create a static entry for testing
+#[tokio::test]
+async fn test_render_tables_static_entry() {
     let mut fields = BTreeMap::new();
     fields.insert("id".to_string(), SqlValue::Integer(1));
     fields.insert("name".to_string(), SqlValue::Text("Alice".to_string()));
@@ -23,7 +22,6 @@ fn test_render_tables_static_entry() {
     let mut values = Vec::new();
     values.push(fields.clone());
 
-    // Create second row
     let mut fields2 = BTreeMap::new();
     fields2.insert("id".to_string(), SqlValue::Integer(2));
     fields2.insert("name".to_string(), SqlValue::Text("Bob".to_string()));
@@ -36,7 +34,7 @@ fn test_render_tables_static_entry() {
     };
 
     let entries = vec![entry];
-    let result = template::render_tables(entries);
+    let result = template::render_tables(entries, MOCK_DB).await;
 
     assert!(result.is_ok());
     let tables = result.unwrap();
@@ -45,11 +43,9 @@ fn test_render_tables_static_entry() {
     assert!(tables.contains_key("users"));
 
     let users_table = tables.get("users").unwrap();
-    assert_eq!(users_table.len(), 2); // 2 rows
+    assert_eq!(users_table.len(), 2);
 
-    // Verify first row (BTreeMap keeps keys sorted alphabetically)
-    assert_eq!(users_table[0].len(), 3); // 3 columns
-                                         // Keys will be sorted: "active", "id", "name"
+    assert_eq!(users_table[0].len(), 3);
     assert_eq!(users_table[0][0].0, "active");
     assert_eq!(users_table[0][0].1, SqlValue::Boolean(true));
     assert_eq!(users_table[0][1].0, "id");
@@ -57,15 +53,13 @@ fn test_render_tables_static_entry() {
     assert_eq!(users_table[0][2].0, "name");
     assert_eq!(users_table[0][2].1, SqlValue::Text("Alice".to_string()));
 
-    // Verify second row
     assert_eq!(users_table[1][0].1, SqlValue::Boolean(false));
     assert_eq!(users_table[1][1].1, SqlValue::Integer(2));
     assert_eq!(users_table[1][2].1, SqlValue::Text("Bob".to_string()));
 }
 
-#[test]
-fn test_render_tables_repeat_entry() {
-    // Create a repeat entry for testing
+#[tokio::test]
+async fn test_render_tables_repeat_entry() {
     let mut fields = BTreeMap::new();
     fields.insert("id".to_string(), SqlValue::Integer(100));
     fields.insert("name".to_string(), SqlValue::Text("Product".to_string()));
@@ -78,7 +72,7 @@ fn test_render_tables_repeat_entry() {
     };
 
     let entries = vec![entry];
-    let result = template::render_tables(entries);
+    let result = template::render_tables(entries, MOCK_DB).await;
 
     assert!(result.is_ok());
     let tables = result.unwrap();
@@ -87,12 +81,10 @@ fn test_render_tables_repeat_entry() {
     assert!(tables.contains_key("products"));
 
     let products_table = tables.get("products").unwrap();
-    assert_eq!(products_table.len(), 3); // 3 rows due to count: 3
+    assert_eq!(products_table.len(), 3);
 
-    // Verify that each row has the same structure (BTreeMap sorts keys)
     for row in products_table {
-        assert_eq!(row.len(), 3); // 3 columns
-                                  // Keys will be sorted: "id", "name", "price"
+        assert_eq!(row.len(), 3);
         assert_eq!(row[0].0, "id");
         assert_eq!(row[0].1, SqlValue::Integer(100));
         assert_eq!(row[1].0, "name");
@@ -102,9 +94,8 @@ fn test_render_tables_repeat_entry() {
     }
 }
 
-#[test]
-fn test_render_tables_multiple_tables() {
-    // Create entries for multiple tables
+#[tokio::test]
+async fn test_render_tables_multiple_tables() {
     let mut users_fields = BTreeMap::new();
     users_fields.insert("id".to_string(), SqlValue::Integer(1));
     users_fields
@@ -126,7 +117,7 @@ fn test_render_tables_multiple_tables() {
     };
 
     let entries = vec![users_entry, products_entry];
-    let result = template::render_tables(entries);
+    let result = template::render_tables(entries, MOCK_DB).await;
 
     assert!(result.is_ok());
     let tables = result.unwrap();
@@ -135,28 +126,19 @@ fn test_render_tables_multiple_tables() {
     assert!(tables.contains_key("users"));
     assert!(tables.contains_key("products"));
 
-    // Verify users table
-    let users = tables.get("users").unwrap();
-    assert_eq!(users.len(), 1);
-
-    // Verify products table
-    let products = tables.get("products").unwrap();
-    assert_eq!(products.len(), 2);
+    assert_eq!(tables.get("users").unwrap().len(), 1);
+    assert_eq!(tables.get("products").unwrap().len(), 2);
 }
 
-#[test]
-fn test_render_tables_empty_entries() {
-    let entries = vec![];
-    let result = template::render_tables(entries);
-
+#[tokio::test]
+async fn test_render_tables_empty_entries() {
+    let result = template::render_tables(vec![], MOCK_DB).await;
     assert!(result.is_ok());
-    let tables = result.unwrap();
-    assert_eq!(tables.len(), 0);
+    assert_eq!(result.unwrap().len(), 0);
 }
 
-#[test]
-fn test_render_tables_mixed_sql_value_types() {
-    // Test with all SqlValue types
+#[tokio::test]
+async fn test_render_tables_mixed_sql_value_types() {
     let mut fields = BTreeMap::new();
     fields.insert("int_col".to_string(), SqlValue::Integer(42));
     fields.insert("float_col".to_string(), SqlValue::Float(3.14159));
@@ -172,22 +154,20 @@ fn test_render_tables_mixed_sql_value_types() {
         values: vec![fields],
     };
 
-    let entries = vec![entry];
-    let result = template::render_tables(entries);
-
+    let result = template::render_tables(vec![entry], MOCK_DB).await;
     assert!(result.is_ok());
     let tables = result.unwrap();
 
     let mixed_table = tables.get("mixed_types").unwrap();
     assert_eq!(mixed_table.len(), 1);
-    assert_eq!(mixed_table[0].len(), 5); // 5 different types
+    assert_eq!(mixed_table[0].len(), 5);
 
-    // Verify the types are preserved
     let row = &mixed_table[0];
     assert!(row
         .iter()
         .any(|(k, v)| k == "int_col" && matches!(v, SqlValue::Integer(42))));
-    assert!(row.iter().any(|(k, v)| k == "float_col" && matches!(v, SqlValue::Float(f) if (*f - 3.14159).abs() < f64::EPSILON)));
+    assert!(row.iter().any(|(k, v)| k == "float_col"
+        && matches!(v, SqlValue::Float(f) if (*f - 3.14159).abs() < f64::EPSILON)));
     assert!(row.iter().any(|(k, v)| k == "text_col"
         && matches!(v, SqlValue::Text(s) if s == "Hello World")));
     assert!(row
