@@ -216,7 +216,9 @@ async fn run_single_seeder_with_tracking(
 
     // Mark as executed using timestamp from file
     let timestamp = read_seeder_timestamp(&seeder_name);
-    tracker.mark_seeder_executed(&seeder_name, timestamp).await?;
+    tracker
+        .mark_seeder_executed(&seeder_name, timestamp)
+        .await?;
 
     Ok(())
 }

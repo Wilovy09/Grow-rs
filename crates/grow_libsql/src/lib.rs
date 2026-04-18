@@ -143,9 +143,8 @@ pub async fn query_single_text(
     db_url: String,
     sql: &str,
 ) -> Result<String, String> {
-    let db_token = std::env::var("TURSO_AUTH_TOKEN").map_err(|err| {
-        format!("`TURSO_AUTH_TOKEN`: {err}")
-    })?;
+    let db_token = std::env::var("TURSO_AUTH_TOKEN")
+        .map_err(|err| format!("`TURSO_AUTH_TOKEN`: {err}"))?;
 
     let client = libsql::Builder::new_remote(db_url, db_token)
         .build()

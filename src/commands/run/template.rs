@@ -52,11 +52,12 @@ pub async fn render_tables(
 
                         let rendered_value = match value {
                             SqlValue::Text(text) => {
-                                let pre = super::query::resolve_query_placeholders(
-                                    text,
-                                    database_url,
-                                )
-                                .await?;
+                                let pre =
+                                    super::query::resolve_query_placeholders(
+                                        text,
+                                        database_url,
+                                    )
+                                    .await?;
                                 let rendered =
                                     templating.render(&pre).map_err(|err| {
                                         format!(
@@ -92,11 +93,12 @@ pub async fn render_tables(
 
                         let rendered_value = match value {
                             SqlValue::Text(text) => {
-                                let pre = super::query::resolve_query_placeholders(
-                                    text,
-                                    database_url,
-                                )
-                                .await?;
+                                let pre =
+                                    super::query::resolve_query_placeholders(
+                                        text,
+                                        database_url,
+                                    )
+                                    .await?;
                                 let rendered =
                                     templating.render(&pre).map_err(|err| {
                                         format!(

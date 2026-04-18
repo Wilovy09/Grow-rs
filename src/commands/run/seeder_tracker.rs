@@ -137,7 +137,6 @@ impl SeederTracker {
         seeder_name: &str,
         timestamp: i64,
     ) -> Result<(), Box<dyn Error>> {
-
         let query = "INSERT INTO _grow_seeders (timestamp, name) VALUES (?, ?)";
 
         match self.scheme {

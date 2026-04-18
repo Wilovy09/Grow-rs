@@ -1,19 +1,20 @@
-use std::env;
-use std::error::Error;
 use crate::commands::run::seeder_tracker::SeederTracker;
 use crate::utils;
+use std::env;
+use std::error::Error;
 
 pub async fn list_seeders_status() -> Result<(), Box<dyn Error>> {
     let seeders = utils::list_seeders().await?;
-    
+
     if seeders.is_empty() {
         println!("No seeders available in the seeders directory.");
         return Ok(());
     }
 
-    let database_url = env::var("DATABASE_URL")
-        .map_err(|_| "Please, be sure to set the `DATABASE_URL` environment variable.")?;
-    
+    let database_url = env::var("DATABASE_URL").map_err(|_| {
+        "Please, be sure to set the `DATABASE_URL` environment variable."
+    })?;
+
     let tracker = SeederTracker::new(database_url)?;
     tracker.ensure_seeds_table().await?;
 
@@ -27,10 +28,10 @@ pub async fn list_seeders_status() -> Result<(), Box<dyn Error>> {
         } else {
             "⏳ Pending"
         };
-        
+
         println!("{:<30} {:<10}", seeder, status);
     }
-    
+
     println!();
     Ok(())
 }

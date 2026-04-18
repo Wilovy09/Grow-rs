@@ -26,8 +26,8 @@ async fn execute_query_for_value(
     sql: &str,
     database_url: &str,
 ) -> Result<String, String> {
-    let scheme = SchemeDriver::from_str(database_url)
-        .map_err(|e| e.to_string())?;
+    let scheme =
+        SchemeDriver::from_str(database_url).map_err(|e| e.to_string())?;
 
     match scheme {
         SchemeDriver::Mock => Ok(format!("QUERY_RESULT({sql})")),
