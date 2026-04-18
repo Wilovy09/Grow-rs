@@ -180,14 +180,11 @@ async fn test_render_tables_mixed_sql_value_types() {
 
 #[test]
 fn test_rendered_table_type_alias() {
-    // Test that RenderedTable type alias works correctly
     let mut table: template::RenderedTable = Vec::new();
-
     let row = vec![
         ("id".to_string(), SqlValue::Integer(1)),
         ("name".to_string(), SqlValue::Text("Test".to_string())),
     ];
-
     table.push(row);
 
     assert_eq!(table.len(), 1);
