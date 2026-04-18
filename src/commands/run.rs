@@ -4,6 +4,7 @@ pub mod entry;
 pub mod fake;
 #[cfg(feature = "fake")]
 pub mod fake_generated;
+pub mod query;
 pub mod seeder_tracker;
 pub mod template;
 
