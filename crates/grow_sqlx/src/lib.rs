@@ -76,7 +76,7 @@ async fn insert_entry(
         placeholders
     );
 
-    let mut query = sqlx::query(&sql_query);
+    let mut query = sqlx::query(sqlx::AssertSqlSafe(sql_query.as_str()));
 
     for value in values {
         query = match value {
@@ -123,7 +123,7 @@ pub async fn execute_query(
         format!("Cannot connect to database ({database_url}): {err}")
     })?;
 
-    sqlx::query(query)
+    sqlx::query(sqlx::AssertSqlSafe(query))
         .execute(&pool)
         .await
         .map_err(|err| format!("Error executing query ({query}): {err}"))?;
@@ -143,7 +143,7 @@ pub async fn execute_query_with_params(
         format!("Cannot connect to database ({database_url}): {err}")
     })?;
 
-    sqlx::query(query)
+    sqlx::query(sqlx::AssertSqlSafe(query))
         .bind(timestamp)
         .bind(name)
         .execute(&pool)
@@ -163,7 +163,7 @@ pub async fn query_single_text(
         format!("Cannot connect to database ({database_url}): {err}")
     })?;
 
-    let row = sqlx::query(sql)
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql))
         .fetch_one(&pool)
         .await
         .map_err(|err| format!("Error executing query ({sql}): {err}"))?;
@@ -195,7 +195,7 @@ pub async fn query_single_int(
         format!("Cannot connect to database ({database_url}): {err}")
     })?;
 
-    let row: (i64,) = sqlx::query_as(query)
+    let row: (i64,) = sqlx::query_as(sqlx::AssertSqlSafe(query))
         .bind(param)
         .fetch_one(&pool)
         .await

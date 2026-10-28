@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
 
-use ron_edit::*;
+use ron_next::*;
 
 use crate::utils;
 use grow_core::SqlValue;
@@ -92,7 +92,7 @@ impl TryFrom<MapItem<'_>> for Entry {
 
         if let Some(ref attributes) = map_item.attributes {
             // Convert Vec<WsLead<InlineAttribute>> to slice of InlineAttribute
-            let attrs: Vec<&ron_edit::InlineAttribute> =
+            let attrs: Vec<&ron_next::InlineAttribute> =
                 attributes.iter().map(|w| &w.content).collect();
             repeat_count = extract_repeat_count(&attrs);
             schema_name = extract_schema_name(&attrs);
@@ -312,14 +312,14 @@ fn fields_from_value(
 
 /// Extract repeat count from inline attributes
 fn extract_repeat_count(
-    attributes: &[&ron_edit::InlineAttribute],
+    attributes: &[&ron_next::InlineAttribute],
 ) -> Option<usize> {
     attributes.iter().find_map(|attr| match *attr {
-        ron_edit::InlineAttribute::KeyValue { ident, value, .. }
+        ron_next::InlineAttribute::KeyValue { ident, value, .. }
             if *ident == "repeat" =>
         {
             // Try to parse the value as a number
-            if let ron_edit::Value::Int(int_value) = value {
+            if let ron_next::Value::Int(int_value) = value {
                 int_value.to_string().parse::<usize>().ok()
             } else {
                 None
@@ -331,17 +331,17 @@ fn extract_repeat_count(
 
 /// Extract schema name from inline attributes
 fn extract_schema_name(
-    attributes: &[&ron_edit::InlineAttribute],
+    attributes: &[&ron_next::InlineAttribute],
 ) -> Option<String> {
     attributes.iter().find_map(|attr| match *attr {
-        ron_edit::InlineAttribute::KeyValue { ident, value, .. }
+        ron_next::InlineAttribute::KeyValue { ident, value, .. }
             if *ident == "schema" =>
         {
             // Extract string value
-            if let ron_edit::Value::Str(str_value) = value {
+            if let ron_next::Value::Str(str_value) = value {
                 match str_value {
-                    ron_edit::Str::Baked(content) => Some(content.to_string()),
-                    ron_edit::Str::Raw { content, .. } => {
+                    ron_next::Str::Baked(content) => Some(content.to_string()),
+                    ron_next::Str::Raw { content, .. } => {
                         Some(content.to_string())
                     }
                 }
