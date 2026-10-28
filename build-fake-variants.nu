@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 
 def "main" [--write] {
-  let fake_version = "3.1.0"
+  let fake_version = "5.1.0"
 
   let file = open src/commands/run/fake_generated.rs
 
