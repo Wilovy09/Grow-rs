@@ -10,7 +10,7 @@ repository = "https://github.com/Wilovy09/Grow-rs"
 [dependencies]
 grow_core = { path = "../grow_core" }
 ron = "0.8.1"
-sqlx = { version = "0.8.2", features = [
+sqlx = { version = "0.9.0", features = [
     "runtime-async-std",
     "sqlite",
     "postgres",
