@@ -3,21 +3,26 @@ macro_rules! setup_faker {
         $($name:literal = $locale:ident,)+;
         $(
         mod $mod:ident {
-            $($fn:ident = $var:ident);*
+            $($(($dummy:ident))? $fn:ident = $var:ident);*
             $(;)?
         }
         )*
     ) => {
         use fake::Fake;
 
-        setup_faker! {@consts [$(( $locale ))+]; [] [$($($var ,)*)*]}
+        setup_faker! {@consts [$(( $locale ))+]; [] [$($([$($dummy)? | $var] ,)*)*]}
 
         pub fn setup_faker_variables(_sr_template: &::srtemplate::SrTemplate) {
-            setup_faker! {@vars [_sr_template] [$(( $locale ))+]; [ $($( $var ,)*)* ]}
+            setup_faker! {@vars [_sr_template] [$(( $locale ))+]; [ $($( [$($dummy)? | $var] ,)*)* ]}
         }
 
         pub fn execute_faker(kind: u16) -> Option<String> {
-            setup_faker! (@match [kind] [$(( $locale ))+]; [ $($($mod => $fn = $var;)*)* ])
+            setup_faker! (
+                @match
+                [kind]
+                [$(( $locale ))+];
+                [ $($([$($dummy)? | $mod] => $fn = $var;)*)* ]
+            )
         }
     };
 
@@ -27,30 +32,35 @@ macro_rules! setup_faker {
 
     (@consts $locales:tt; [$($last:ident)?] []) => { };
 
-    (@consts $locales:tt; [] [$var:ident, $($tail:ident ,)*]) => {
-        setup_faker! {@const [0]; $locales; $var}
+    (@consts $locales:tt; [] [[$($dummy:ident)? | $var:ident], $($tail:tt ,)*]) => {
+        setup_faker! {@const [$($dummy)?]; [0]; $locales; $var}
         setup_faker! {@consts $locales; [$var] [ $($tail ,)* ]}
     };
 
-    (@consts $locales:tt; [$last:expr] [$var:ident, $($tail:ident ,)*]) => {
-        setup_faker! {@const [::paste::paste! { [< $last _END >] }]; $locales; $var}
+    (@consts $locales:tt; [$last:expr] [[$($dummy:ident)? | $var:ident], $($tail:tt ,)*]) => {
+        setup_faker! {@const [$($dummy)?]; [::paste::paste! { [< $last _END >] }]; $locales; $var}
         setup_faker! {@consts $locales; [$var] [ $($tail ,)* ]}
     };
 
-    (@const [$count:expr]; []; $var:ident) => {
+    (@const [dummy]; [$count:expr]; $locales:tt; $var:ident) => {
+        #[allow(dead_code)] const $var : u16 = $count; 
+        ::paste::paste! { #[allow(dead_code)] const [< $var _END >] : u16 = $var; }
+    };
+
+    (@const []; [$count:expr]; []; $var:ident) => {
         ::paste::paste! { #[allow(dead_code)] const [< $var _END >]: u16 = $count; }
     };
 
-    (@const [$count:expr]; [( $locale:ident ) $($locales:tt)*]; $var:ident) => {
-        setup_faker! {@set-const [$locale]; $var = $count;}
-        setup_faker! {@const [$count + 1]; [$($locales)*]; $var}
+    (@const []; [$count:expr]; [( $locale:ident ) $($locales:tt)*]; $var:ident) => {
+        setup_faker! {@set-const [$locale]; []; $var = $count;}
+        setup_faker! {@const []; [$count + 1]; [$($locales)*]; $var}
     };
 
-    (@set-const [EN]; $var:ident = $count:expr;) => {
+    (@set-const [EN]; []; $var:ident = $count:expr;) => {
         pub const $var: u16 = $count;
     };
 
-    (@set-const [$locale:ident]; $var:ident = $count:expr;) => {
+    (@set-const [$locale:ident]; []; $var:ident = $count:expr;) => {
         ::paste::paste! { pub const [< $var _ $locale>]: u16 = $count; }
     };
 
@@ -61,15 +71,19 @@ macro_rules! setup_faker {
         $( setup_faker! {@vars [$sr_template] $locale; $vars} )*
     };
 
-    (@vars [$sr_template:ident] $locale:ident; [$($var:ident ,)*]) => {
-        $( setup_faker! {@set-var [$sr_template] [$locale]; $var} )*
+    (@vars [$sr_template:ident] $locale:ident; [$([$($dummy:ident)? | $var:ident] ,)*]) => {
+        $( setup_faker! {@set-var [$sr_template] [$locale]; [$($dummy)?]; $var} )*
     };
 
-    (@set-var [$sr_template:ident] [EN]; $var:ident) => {
+    (@set-var [$sr_template:ident] [$locale:ident]; [dummy]; $var:ident) => {
         $sr_template.add_variable(stringify!($var), & $var);
     };
 
-    (@set-var [$sr_template:ident] [$locale:ident]; $var:ident) => { ::paste::paste! {
+    (@set-var [$sr_template:ident] [EN]; []; $var:ident) => {
+        $sr_template.add_variable(stringify!($var), & $var);
+    };
+
+    (@set-var [$sr_template:ident] [$locale:ident]; []; $var:ident) => { ::paste::paste! {
         $sr_template.add_variable(stringify!([< $var _ $locale >]), & [< $var _ $locale >]);
     } };
 
@@ -79,24 +93,49 @@ macro_rules! setup_faker {
     (@match
         [$kind:ident]
         $locales:tt;
-        [ $($mod:ident => $fn:ident = $var:ident;)* ]
+        [ $([$($dummy:ident)? | $mod:ident] => $fn:ident = $var:ident;)* ]
         // $mods:tt
     ) => {
         match $kind {
-            $(_
-                if (
-                    setup_faker!(@match-key-start $locales; $var)
-                    ..=
-                    setup_faker!(@match-key-end $locales; $var)
-                ).contains(&$kind)
-                => setup_faker! (@match-value [$kind] $locales; $mod => $fn = $var),
+            $(_ if setup_faker! (@match-match $kind; $locales; $var; $($dummy)?)
+                => setup_faker! (@match-value [$kind] $locales; $($dummy)?; $mod => $fn = $var),
                 // => ,
             )*
             _ => None
         }
     };
 
-    (@match-value [$kind:ident] [$(( $locale:ident ))+]; $mod:ident => $fn:ident = $var:ident) => {
+    (@match-match 
+        $kind:ident;
+        $locales:tt;
+        $var:ident;
+        dummy
+    ) => {
+        $var == $kind
+    };
+
+    (@match-match 
+        $kind:ident;
+        $locales:tt;
+        $var:ident;
+    ) => {
+        (
+            setup_faker!(@match-key-start $locales; $var)
+            ..=
+            setup_faker!(@match-key-end $locales; $var)
+        ).contains(&$kind)
+    };
+
+    (@match-value [$kind:ident] $locale:tt; dummy; $mod:ident => $fn:ident = $var:ident) => {
+        {
+            use ::fake::Fake;
+            Some(
+                <::fake::$mod::$fn as Fake>::fake::<String>(&::fake::$mod::$fn)
+            )
+        }
+    };
+
+    (@match-value [$kind:ident] [$(( $locale:ident ))+];; $mod:ident => $fn:ident = $var:ident) => {
         match $kind {
             $(setup_faker!(@match-key [$locale]; $var) => Some(::fake::faker::$mod::raw::$fn(::fake::locales::$locale).fake()),)+
             _ => unsafe { ::core::hint::unreachable_unchecked() }
@@ -260,6 +299,22 @@ setup_faker! {
     mod finance {
         Bic = BIC;
         Isin = ISIN;
+    }
+
+    mod time {
+        Time = TIME;
+        Date = DATE;
+        DateTime = DATETIME;
+    }
+
+    mod uuid {
+        (dummy) UUIDv1 = UUIDV1;
+        (dummy) UUIDv3 = UUIDV3;
+        (dummy) UUIDv4 = UUIDV4;
+        (dummy) UUIDv5 = UUIDV5;
+        (dummy) UUIDv6 = UUIDV6;
+        (dummy) UUIDv7 = UUIDV7;
+        (dummy) UUIDv8 = UUIDV8;
     }
 
     // mod administrative {
